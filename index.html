@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Somengil - Checklist de Instalação Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Configuração de cores personalizada para Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'somengil-blue': '#004aad', // Azul principal da marca
+                        'somengil-light': '#f4f7fa', // Fundo
+                        'somengil-dark': '#000000', // Fundo escuro (Preto puro)
+                        'somengil-accent': '#2a64b9', // Um tom mais claro para botões hover/secundários
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7fa; }
+        
+        /* Ajuste de cores para o fundo PRETO da Sidebar */
+        .sidebar-dark-active { 
+            background-color: #1f2937; /* Slate-800 escuro para fundo ativo */
+            color: #ffffff; /* Texto branco */
+            border-right: 3px solid #004aad; /* Linha azul da Somengil */
+            font-weight: 600;
+        }
+        .sidebar-dark-active .section-icon {
+            background-color: #004aad; /* Ícone azul ativo */
+            color: #ffffff;
+        }
+        .sidebar-dark-inactive { 
+            color: #94a3b8; /* Slate-400 para texto inativo */
+            border-right: 3px solid transparent; 
+        }
+        .sidebar-dark-inactive:hover { 
+            background-color: #111827; /* Slate-900 para hover muito escuro */
+            color: #ffffff; 
+        }
+        .sidebar-dark-inactive .section-icon {
+             background-color: #1f2937; /* Slate-800 para ícone inativo */
+             color: #94a3b8;
+        }
+        
+        /* Estilos globais antigos (mantidos, mas substituídos na sidebar) */
+        .tab-active { 
+            background-color: #e6f0ff; 
+            color: #004aad; 
+            border-right: 3px solid #004aad; 
+            font-weight: 600;
+        }
+        .tab-inactive { 
+            color: #64748b; 
+            border-right: 3px solid transparent; 
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom radio styling for better touch target */
+        .form-radio {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            border: 2px solid #9ca3af; /* Gray-400 */
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .form-radio:checked {
+            border-color: transparent;
+            background-color: #004aad; /* Somengil Blue */
+            box-shadow: 0 0 0 4px #e6f0ff; /* Ring-2 Light Blue */
+        }
+        .form-radio:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.5);
+        }
+    </style>
+</head>
+<body class="text-somengil-dark h-screen flex flex-col overflow-hidden">
+
+    <!-- Application Logic (Refatorada para usar apenas Apps Script) -->
+    <script type="module">
+        // Global State
+        const state = {
+            serial: null,
+            data: {},
+            loading: false,
+            activeTab: 'section-1'
+        };
+
+        // URL do Google Apps Script para sincronização (Escrita/Leitura)
+        const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzKRq_XkmPd6yzRTdPTTrfl5IgjqdedFL96M0eTy6D0CkEXs2hdPFfDvpfquqbpa-xY2A/exec"; 
+
+        // NOVO: Valores padrão vazios para garantir que campos não preenchidos no Sheets fiquem em branco na App.
+        const emptyDefaults = {
+            // I. Técnico
+            tecnicoNome: "", tecnicoEmail: "", tecnicoTelefone: "",
+            // II. Cliente
+            clienteNome: "", clienteNIF: "", clienteMorada: "", clienteEmail: "", 
+            clienteCodigoPostal: "", clienteCidade: "", clienteRepresentante: "", clienteTelefone: "", clientePais: "",
+            // III. Equipamento
+            equipamentoModelo: "", equipamentoVoltagem: "", equipamentoFrequencia: "", equipamentoAquecimento: "",
+            // IV. Montagem
+            condicaoMontagem: "", instalacaoTipo: "", responsabilidadeGradil: "",
+            // V. Checklist (Booleans/Enums)
+            podeReceberTIR: "", temEmpilhador: "", podeDescarregarSemTecnico: "", temTecnicoAuxiliar: "",
+            podeArmazenar: "", necessarioCintas: "", temAguaSala: "", adaptadorAguaTamanho: "",
+            temEnergiaEletrica: "", temEscadas: "", temFichaEletrica: "", amperesOpcao: "",
+            temDetergentes: "", documentacaoFabrica: "", equipamentoProtecao: "", chaoAcabado: "",
+            drenoPreparado: "", ventilacaoPreparada: "", operadorPresente: "", operadorNome: "",
+            responsavelComissionamentoPresente: "", responsavelComissionamentoNome: "", temUtensiliosSujos: "",
+            // VI. Info (Números devem ser null)
+            ligacoesPressaoAgua: "", marcaProdutosQuimicos: "", medicaoPortaLargura: null, medicaoPortaAltura: null, 
+            medicaoChaoTecto: null, horarioTrabalhoInicio: "", horarioTrabalhoFim: "", dataEntregaPrevista: "", observacoes: "",
+            // VII. FOTOS E FICHEIROS (NOVO CAMPO)
+            linksFotosFicheiros: "",
+        };
+        
+        // Default Data Structure (Usado apenas para iteração e definição de campos)
+        const defaultData = emptyDefaults;
+        
+        // Campos Mínimos para Criação de Novo Equipamento (Secções I, II, III, IV)
+        const creationFields = [
+            'tecnicoNome', 'tecnicoEmail', 'tecnicoTelefone',
+            'clienteNome', 'clienteNIF', 'clienteMorada', 'clienteEmail', 
+            'clienteCodigoPostal', 'clienteCidade', 'clienteRepresentante', 'clienteTelefone', 'clientePais',
+            'equipamentoModelo', 'equipamentoVoltagem', 'equipamentoFrequencia', 'equipamentoAquecimento',
+            'condicaoMontagem', 'instalacaoTipo', 'responsabilidadeGradil'
+        ];
+
+        // Mapeamento de chaves para secções para calcular o progresso por separador
+        const sectionMap = {
+            // I. Técnico (3 campos)
+            tecnicoNome: 'section-1', tecnicoEmail: 'section-1', tecnicoTelefone: 'section-1',
+            // II. Cliente (9 campos)
+            clienteNome: 'section-2', clienteNIF: 'section-2', clienteMorada: 'section-2', clienteEmail: 'section-2', 
+            clienteCodigoPostal: 'section-2', clienteCidade: 'section-2', clienteRepresentante: 'section-2', clienteTelefone: 'section-2', clientePais: 'section-2',
+            // III. Equipamento (4 campos)
+            equipamentoModelo: 'section-3', equipamentoVoltagem: 'section-3', equipamentoFrequencia: 'section-3', equipamentoAquecimento: 'section-3',
+            // IV. Montagem (3 campos)
+            condicaoMontagem: 'section-4', instalacaoTipo: 'section-4', responsabilidadeGradil: 'section-4',
+            // V. Logística & Local (22 campos)
+            podeReceberTIR: 'section-5', temEmpilhador: 'section-5', podeDescarregarSemTecnico: 'section-5', temTecnicoAuxiliar: 'section-5',
+            podeArmazenar: 'section-5', necessarioCintas: 'section-5', temAguaSala: 'section-5', adaptadorAguaTamanho: 'section-5',
+            temEnergiaEletrica: 'section-5', temEscadas: 'section-5', temFichaEletrica: 'section-5', amperesOpcao: 'section-5',
+            temDetergentes: 'section-5', documentacaoFabrica: 'section-5', equipamentoProtecao: 'section-5', chaoAcabado: 'section-5',
+            drenoPreparado: 'section-5', ventilacaoPreparada: 'section-5', operadorPresente: 'section-5', operadorNome: 'section-5',
+            responsavelComissionamentoPresente: 'section-5', responsavelComissionamentoNome: 'section-5', temUtensiliosSujos: 'section-5',
+            // VI. Info & Medições (9 campos)
+            ligacoesPressaoAgua: 'section-6', marcaProdutosQuimicos: 'section-6', medicaoPortaLargura: 'section-6', medicaoPortaAltura: 'section-6', 
+            medicaoChaoTecto: 'section-6', horarioTrabalhoInicio: 'section-6', horarioTrabalhoFim: 'section-6', dataEntregaPrevista: 'section-6', observacoes: 'section-6',
+            // VII. Fotos e Ficheiros (1 campo - NOVO)
+            linksFotosFicheiros: 'section-7'
+        };
+
+
+        // --- Core Logic ---
+
+        function initApp() {
+            showActionView();
+            // Define o tab inicial com as classes escuras
+            switchTab('section-1', true); 
+            console.log("Aplicação iniciada. Fonte de dados: Google Apps Script.");
+        }
+        
+        // NOVO: Navegação para a vista de Criação
+        window.showCreationView = () => {
+            document.getElementById('action-view').classList.add('hidden');
+            document.getElementById('creation-form-view').classList.remove('hidden');
+        };
+
+        // NOVO: Navegação para a vista de Ações
+        window.showActionView = () => {
+            document.getElementById('app-view').classList.add('hidden');
+            document.getElementById('creation-form-view').classList.add('hidden');
+            document.getElementById('accessSerialInput').value = '';
+            document.getElementById('creationSerialInput').value = '';
+            document.getElementById('action-view').classList.remove('hidden');
+        };
+        
+        // NOVO: Tenta criar um novo separador/equipamento
+        window.createNewEquipment = async (e) => {
+            e.preventDefault();
+            const serial = document.getElementById('creationSerialInput').value.trim();
+            if (!serial) return;
+            
+            showLoading(true);
+            
+            // 1. Coletar dados iniciais do formulário de criação
+            let creationData = {};
+            creationFields.forEach(key => {
+                // Tenta encontrar o input de texto/número
+                let input = document.getElementById(`field-creation-${key}`);
+                
+                if (input) {
+                    creationData[key] = input.value;
+                } else {
+                    // Tenta encontrar o input de rádio
+                    const checkedRadio = document.querySelector(`input[name="creation-${key}"]:checked`);
+                    creationData[key] = checkedRadio ? checkedRadio.value : "";
+                }
+            });
+            
+            // 2. Preenche o estado global usando emptyDefaults para que o resto fique vazio
+            state.serial = serial;
+            state.data = { ...emptyDefaults, ...creationData }; // USA emptyDefaults AQUI
+            
+            // 3. Salvar (O Apps Script criará o separador se necessário)
+            await saveData(true); // Força a gravação após a criação
+            
+            // 4. Transiciona para a aplicação principal
+            document.getElementById('creation-form-view').classList.add('hidden');
+            document.getElementById('app-view').classList.remove('hidden');
+            document.getElementById('display-serial').innerText = `Sheet #${state.serial}`;
+            
+            // Recarrega o formulário principal com os dados
+            populateForm(state.data);
+            calculateAndDisplayProgress(state.data);
+            switchTab('section-1', true); // Garante que a primeira aba é mostrada e tem a classe escura ativa
+            showLoading(false);
+        };
+
+
+        // Função de login (agora renomeada para Aceder a um Equipamento Existente)
+        window.accessExistingEquipment = async (e) => {
+            e.preventDefault();
+            const serialInput = document.getElementById('accessSerialInput').value.trim();
+            if (!serialInput) return;
+
+            state.serial = serialInput;
+            document.getElementById('action-view').classList.add('hidden');
+            document.getElementById('app-view').classList.remove('hidden');
+            document.getElementById('display-serial').innerText = `Sheet #${state.serial}`;
+            
+            await loadSheetData(state.serial);
+            switchTab('section-1', true); // Garante que a primeira aba é mostrada e tem a classe escura ativa
+        };
+
+        // NOVO: Adaptação da função saveData para ser usada na criação e gravação normal
+        window.saveData = async (isInitialCreation = false) => {
+            if (!state.serial) return;
+            const btn = document.getElementById('save-btn');
+            const originalText = isInitialCreation ? "A criar..." : btn.innerText;
+            
+            if (!isInitialCreation) {
+                btn.innerText = "A guardar...";
+                btn.disabled = true;
+            }
+
+            let newData = {};
+            let isSheetSyncSuccessful = true;
+
+            try {
+                // 1. Coletar dados:
+                if (isInitialCreation) {
+                    // FIX: Se é criação inicial, a fonte de dados é o state.data (preenchido no createNewEquipment).
+                    for (const key in emptyDefaults) {
+                        // Usa o valor em state.data (com os dados de criação), senão usa o valor vazio.
+                        newData[key] = state.data[key] !== undefined ? state.data[key] : emptyDefaults[key];
+                    }
+                } else {
+                    // Caso contrário (salvamento normal), lemos o formulário principal visível.
+                    for (const key in emptyDefaults) {
+                        const input = document.getElementById(`field-${key}`);
+                        if (input) {
+                             if (input.type === 'number') {
+                                 newData[key] = input.value === "" ? null : Number(input.value);
+                             } else {
+                                newData[key] = input.value;
+                             }
+                        } else {
+                            // Trata campos de rádio/checkbox
+                            const checkedRadio = document.querySelector(`input[name="${key}"]:checked`);
+                            if (checkedRadio) {
+                                newData[key] = checkedRadio.value;
+                            } else {
+                                 // Se não for rádio checked, assume o valor vazio/nulo do emptyDefaults
+                                 newData[key] = emptyDefaults[key] || "";
+                            }
+                        }
+                    }
+                    // Atualiza o state.data com os dados lidos do formulário
+                    state.data = {...state.data, ...newData};
+                }
+
+
+                // 2. Sincronizar com o Google Sheets API (escrita) - Usa o 'newData' preenchido acima
+                if (GOOGLE_SHEET_API_URL && GOOGLE_SHEET_API_URL.startsWith('http')) {
+                    try {
+                        const sheetPayload = {
+                            serial: state.serial,
+                            data: newData, // CORRETO: Usa o newData
+                            timestamp: new Date().toISOString(),
+                            action: 'write'
+                        };
+                        
+                        const response = await fetch(GOOGLE_SHEET_API_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(sheetPayload)
+                        });
+                        console.log("Data sent to Google Sheets API.");
+
+                    } catch (sheetError) {
+                        isSheetSyncSuccessful = false;
+                        console.warn("Could not synchronize with Google Sheets API:", sheetError);
+                    }
+                }
+
+
+                // 3. Atualizar UI
+                if (!isInitialCreation) {
+                    btn.innerText = "Guardado!";
+                    btn.classList.remove('bg-somengil-blue');
+                    btn.classList.add('bg-emerald-600');
+                    
+                    let statusMessage = "Salvo com sucesso na Google Sheet.";
+                    if (!isSheetSyncSuccessful) {
+                        statusMessage = "⚠ Erro de sincronização. Dados podem não ter sido salvos.";
+                        document.getElementById('save-status').classList.remove('text-emerald-600');
+                        document.getElementById('save-status').classList.add('text-red-500');
+                    } else {
+                         document.getElementById('save-status').classList.remove('text-red-500', 'text-yellow-500');
+                         document.getElementById('save-status').classList.add('text-emerald-600');
+                    }
+                    document.getElementById('save-status').innerText = statusMessage;
+
+
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.remove('bg-emerald-600');
+                        btn.classList.add('bg-somengil-blue');
+                        btn.disabled = false;
+                    }, 2000);
+                } else {
+                    document.getElementById('save-status').innerText = "Novo equipamento criado e salvo.";
+                }
+                
+                calculateAndDisplayProgress(state.data); 
+
+            } catch (error) {
+                console.error("Save error:", error);
+                if (!isInitialCreation) {
+                    btn.innerText = "Erro!";
+                    document.getElementById('save-status').innerText = "Erro ao salvar! Verifique a consola.";
+                    document.getElementById('save-status').classList.remove('text-emerald-600', 'text-yellow-500');
+                    document.getElementById('save-status').classList.add('text-red-500');
+                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                } else {
+                     document.getElementById('save-status').innerText = "Erro ao criar novo equipamento!";
+                }
+            }
+        };
+
+        // NOVO: Carrega dados do Apps Script (Leitura)
+        async function loadSheetData(serial) {
+            showLoading(true);
+            try {
+                // Requisição de leitura para o Apps Script
+                const payload = { serialNumber: serial, action: 'fetch' };
+                const requestBody = new URLSearchParams(payload).toString();
+
+                const response = await fetch(GOOGLE_SHEET_API_URL, {
+                    method: 'POST',
+                    mode: 'cors', // Deve ser 'cors' ou o Apps Script deve aceitar POST com URLSearchParams
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: requestBody
+                });
+
+                if (!response.ok) throw new Error(`Network error: ${response.status}`);
+
+                const result = await response.json();
+                
+                if (result.result === 'success' && result.data) {
+                    // Dados encontrados: Carrega e preenche o formulário. Usa emptyDefaults como base.
+                    state.data = { ...emptyDefaults, ...result.data };
+                    populateForm(state.data);
+                    calculateAndDisplayProgress(state.data);
+                    document.getElementById('save-status').innerText = "Dados carregados da Google Sheet.";
+                    document.getElementById('save-status').classList.remove('text-red-500', 'text-yellow-500');
+                    document.getElementById('save-status').classList.add('text-emerald-600');
+                } else if (result.result === 'not_found') {
+                    // Separador não encontrado: Começa com dados padrão (O Apps Script deve criar na 1ª gravação)
+                    state.data = { ...emptyDefaults }; // Se não encontrou, começa VAZIO
+                    populateForm(state.data);
+                    calculateAndDisplayProgress(state.data);
+                    document.getElementById('save-status').innerText = "Folha não encontrada. Preparada para nova criação.";
+                    document.getElementById('save-status').classList.remove('text-red-500', 'text-emerald-600');
+                    document.getElementById('save-status').classList.add('text-yellow-500');
+                } else {
+                     throw new Error(`Apps Script Error: ${result.message || 'Resposta inesperada'}`);
+                }
+            } catch (error) {
+                console.error("Error loading data from Apps Script:", error);
+                document.getElementById('save-status').innerText = `Erro ao carregar dados: ${error.message}`;
+                document.getElementById('save-status').classList.remove('text-emerald-600', 'text-yellow-500');
+                document.getElementById('save-status').classList.add('text-red-500');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Função que preenche o formulário com os dados carregados
+        function populateForm(data) {
+            for (const key in data) {
+                const val = data[key];
+                const input = document.getElementById(`field-${key}`);
+                
+                if (input) {
+                    if (input.type === 'number') {
+                         input.value = val !== null && val !== undefined ? val : "";
+                    } else {
+                        input.value = val;
+                    }
+                }
+                
+                const radios = document.querySelectorAll(`input[name="${key}"]`);
+                if (radios.length > 0) {
+                    radios.forEach(r => {
+                        // Verifica se o valor do rádio corresponde ao valor armazenado (que pode ser "" ou null)
+                        if (String(r.value) === String(val)) {
+                            r.checked = true;
+                        } else {
+                             r.checked = false;
+                        }
+                    });
+                }
+            }
+        }
+
+        // --- Visualization Logic (Progress) ---
+        let progressChart = null;
+
+        /**
+         * Calcula o progresso global e por secção e atualiza o gráfico e a navegação.
+         * @param {object} data Dados do formulário
+         */
+        function calculateAndDisplayProgress(data) {
+            let totalGlobal = 0;
+            let filledGlobal = 0;
+            const sectionProgress = {
+                'section-1': { total: 0, filled: 0 },
+                'section-2': { total: 0, filled: 0 },
+                'section-3': { total: 0, filled: 0 },
+                'section-4': { total: 0, filled: 0 },
+                'section-5': { total: 0, filled: 0 },
+                'section-6': { total: 0, filled: 0 },
+                'section-7': { total: 0, filled: 0 }, // NOVO: Secção VII
+            };
+
+            for (const key in emptyDefaults) { // Itera sobre emptyDefaults (que tem todos os campos)
+                const sectionId = sectionMap[key];
+                if (!sectionId) continue;
+
+                totalGlobal++;
+                sectionProgress[sectionId].total++;
+                
+                const val = data[key];
+                
+                // Considera o campo preenchido se não for nulo, indefinido e a string não for vazia
+                if (val !== null && val !== undefined && String(val).trim() !== "") {
+                    filledGlobal++;
+                    sectionProgress[sectionId].filled++;
+                }
+            }
+
+            // 1. Atualizar progresso global (Gráfico)
+            const pctGlobal = Math.round((filledGlobal / totalGlobal) * 100);
+            document.getElementById('progress-text').innerText = `${pctGlobal}%`;
+            
+            if (!progressChart) {
+                const ctx = document.getElementById('progressChart').getContext('2d');
+                progressChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Preenchido', 'Vazio'],
+                        datasets: [{
+                            data: [filledGlobal, totalGlobal - filledGlobal],
+                            backgroundColor: ['#4ade80', '#475569'], // Verde/Slate escuro
+                            borderWidth: 0,
+                            cutout: '75%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        animation: { duration: 500 }
+                    }
+                });
+            } else {
+                progressChart.data.datasets[0].data = [filledGlobal, totalGlobal - filledGlobal];
+                 // Atualiza as cores do gráfico se o fundo for escuro (opcional, mas bom para consistência)
+                progressChart.data.datasets[0].backgroundColor = ['#4ade80', '#475569']; // Verde/Slate escuro
+                progressChart.update();
+            }
+
+            // 2. Atualizar progresso por Secção (Navegação)
+            for (const sectionId in sectionProgress) {
+                const { total, filled } = sectionProgress[sectionId];
+                const pctSection = total > 0 ? Math.round((filled / total) * 100) : 0;
+                
+                const spanElement = document.getElementById(`pct-${sectionId}`);
+                if (spanElement) {
+                    spanElement.innerText = `${pctSection}%`;
+                    spanElement.classList.remove('text-somengil-blue', 'text-yellow-600', 'text-emerald-600', 'text-gray-400');
+                    
+                    if (pctSection === 100) {
+                        spanElement.classList.add('text-emerald-400'); // Verde mais claro para fundo escuro
+                    } else if (pctSection > 0) {
+                        spanElement.classList.add('text-yellow-400'); // Amarelo mais claro para fundo escuro
+                    } else {
+                        spanElement.classList.add('text-slate-500'); // Cinza mais claro para fundo escuro
+                    }
+                }
+            }
+        }
+
+
+        // --- UI Logic ---
+
+        window.switchTab = (tabId, initial = false) => {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('sidebar-dark-active', 'tab-active');
+                el.classList.add('sidebar-dark-inactive');
+            });
+            
+            // Ativa a nova classe de fundo escuro
+            document.getElementById(`btn-${tabId}`).classList.add('sidebar-dark-active');
+            document.getElementById(`btn-${tabId}`).classList.remove('sidebar-dark-inactive');
+
+            // Garante que o ícone do gráfico na sidebar é recalculado para ter as cores corretas do fundo escuro
+            if (!initial) {
+                 calculateAndDisplayProgress(state.data);
+            }
+            state.activeTab = tabId;
+        };
+
+        function showLoading(isLoading) {
+            const loader = document.getElementById('loader');
+            if (isLoading) loader.classList.remove('hidden');
+            else loader.classList.add('hidden');
+        }
+
+        window.logout = () => {
+            state.serial = null;
+            state.data = {};
+            document.getElementById('app-view').classList.add('hidden');
+            document.getElementById('creation-form-view').classList.add('hidden');
+            document.getElementById('accessSerialInput').value = '';
+            document.getElementById('creationSerialInput').value = '';
+            showActionView();
+        };
+
+        initApp();
+        
+    </script>
+
+    <!-- Action Selection View (Substitui o login inicial) -->
+    <div id="action-view" class="flex items-center justify-center min-h-screen bg-somengil-light">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg text-center">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-somengil-dark tracking-tight">MULTI WASHER</h1>
+                <p class="text-somengil-blue font-semibold uppercase text-xs tracking-widest mt-1">Plataforma de Instalação</p>
+            </div>
+            
+            <!-- 1. ACESSO EXISTENTE -->
+            <div class="p-6 border border-gray-200 rounded-xl mb-6 bg-gray-50">
+                 <h2 class="text-xl font-semibold text-somengil-dark mb-4">1. Aceder Equipamento Existente</h2>
+                 <p class="text-slate-500 mb-4 text-sm">Insira o número de série para continuar a editar uma checklist.</p>
+                <form onsubmit="accessExistingEquipment(event)" class="space-y-4">
+                    <div>
+                        <input type="text" id="accessSerialInput" placeholder="Número de Série Ex: 123" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-somengil-blue focus:border-somengil-blue outline-none transition text-center text-lg font-mono placeholder-slate-400">
+                    </div>
+                    <button type="submit" 
+                        class="w-full bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-lg shadow-somengil-blue/30">
+                        Aceder e Editar
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. CRIAR NOVO -->
+            <div class="p-6 border border-gray-200 rounded-xl bg-blue-50/50">
+                 <h2 class="text-xl font-semibold text-somengil-dark mb-4">2. Criar Novo Equipamento</h2>
+                 <p class="text-slate-600 mb-4 text-sm">Inicie uma nova checklist e crie um novo separador na Google Sheet.</p>
+                <button onclick="showCreationView()"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-emerald-600/30">
+                    Iniciar Nova Checklist
+                </button>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-slate-100 text-xs text-slate-400">
+                &copy; Somengil 2024.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Creation Form View (Formulário Mínimo de Criação) -->
+    <div id="creation-form-view" class="hidden flex items-center justify-center min-h-screen bg-somengil-light">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl">
+            <h2 class="text-2xl font-bold text-somengil-blue mb-2">Novo Equipamento - Dados Iniciais</h2>
+            <p class="text-slate-500 mb-6">Estes dados serão usados para criar o novo separador da checklist.</p>
+            
+            <form onsubmit="createNewEquipment(event)" class="space-y-6">
+                
+                <!-- Serial Number -->
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                     <label class="block text-sm font-bold text-somengil-blue mb-1">Número de Série (Nome do Separador na Sheet)</label>
+                    <input type="text" id="creationSerialInput" placeholder="Introduza o novo Número de Série (Ex: 999)" required
+                        class="w-full px-4 py-2 border border-blue-400 rounded focus:ring-2 focus:ring-somengil-blue focus:border-somengil-blue outline-none transition text-lg font-mono placeholder-slate-400">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- I. TÉCNICO -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-3 border-b pb-2">I. Técnico</h3>
+                        <div class="space-y-3">
+                            <div><label class="block text-sm">Nome do Técnico</label><input type="text" id="field-creation-tecnicoNome" required class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Email</label><input type="email" id="field-creation-tecnicoEmail" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Telefone (+351)</label><input type="text" id="field-creation-tecnicoTelefone" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- II. CLIENTE (Colspan 2) -->
+                    <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-3 border-b pb-2">II. Cliente</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="col-span-2"><label class="block text-sm">Nome do Cliente</label><input type="text" id="field-creation-clienteNome" required class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Nº Contribuinte</label><input type="text" id="field-creation-clienteNIF" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Email</label><input type="email" id="field-creation-clienteEmail" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div class="col-span-2"><label class="block text-sm">Morada</label><input type="text" id="field-creation-clienteMorada" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Código Postal</label><input type="text" id="field-creation-clienteCodigoPostal" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Cidade</label><input type="text" id="field-creation-clienteCidade" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">País</label><input type="text" id="field-creation-clientePais" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Representante</label><input type="text" id="field-creation-clienteRepresentante" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                            <div><label class="block text-sm">Telefone Cliente</label><input type="text" id="field-creation-clienteTelefone" class="w-full p-2 border border-gray-300 rounded text-sm"></div>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- III. EQUIPAMENTO -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-3 border-b pb-2">III. Equipamento</h3>
+                         <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Modelo</label>
+                            <div class="flex flex-wrap gap-2" onchange="createNewEquipment.latestData = true">
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 300" class="form-radio"> <span>MWS 300</span></label>
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 500" class="form-radio"> <span>MWS 500</span></label>
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 700" class="form-radio"> <span>MWS 700</span></label>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Voltagem</label>
+                            <input type="text" id="field-creation-equipamentoVoltagem" class="w-full p-2 border border-gray-300 rounded text-sm" placeholder="Ex: 400V">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Frequência</label>
+                            <div class="flex gap-4" onchange="createNewEquipment.latestData = true">
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoFrequencia" value="50Hz" class="form-radio"> <span>50Hz</span></label>
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoFrequencia" value="60Hz" class="form-radio"> <span>60Hz</span></label>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Aquecimento</label>
+                            <div class="flex gap-4" onchange="createNewEquipment.latestData = true">
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoAquecimento" value="Electrico" class="form-radio"> <span>Elétrico</span></label>
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoAquecimento" value="Vapor" class="form-radio"> <span>Vapor</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IV. MONTAGEM -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-3 border-b pb-2">IV. Montagem</h3>
+                        <div class="space-y-4" onchange="createNewEquipment.latestData = true">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Estado de entrega</label>
+                                <div class="flex flex-col gap-1">
+                                    <label class="flex items-center space-x-1"><input type="radio" name="creation-condicaoMontagem" value="Assemblada" class="form-radio"> <span>Assemblada</span></label>
+                                    <label class="flex items-center space-x-1"><input type="radio" name="creation-condicaoMontagem" value="Parcialmente desmontada" class="form-radio"> <span>Parcialmente desmontada</span></label>
+                                    <label class="flex items-center space-x-1"><input type="radio" name="creation-condicaoMontagem" value="Desmontada" class="form-radio"> <span>Desmontada</span></label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Tipo de Instalação</label>
+                                <div class="flex gap-4">
+                                    <label class="flex items-center space-x-1"><input type="radio" name="creation-instalacaoTipo" value="Enterrada" class="form-radio"> <span>Enterrada</span></label>
+                                    <label class="flex items-center space-x-1"><input type="radio" name="creation-instalacaoTipo" value="Sola" class="form-radio"> <span>Solo</span></label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Responsabilidade Gradil</label>
+                                <div class="flex gap-4">
+                                    <label class="flex items-center space-x-1"><input type="radio" name="creation-responsabilidadeGradil" value="Somengil" class="form-radio"> <span>Somengil</span></label>
+                                    <label class="flex items-center space-x-1"><input type="radio" name="creation-responsabilidadeGradil" value="Cliente" class="form-radio"> <span>Cliente</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                     <button type="button" onclick="showActionView()"
+                        class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                        class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-somengil-blue/30 transition-all">
+                        Criar e Abrir Checklist
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- App View (Checklist Principal) -->
+    <div id="app-view" class="hidden flex h-screen">
+        
+        <!-- Sidebar -->
+        <!-- Fundo PRETO, texto branco. Reordenado: Navegação > Progresso > Imagem > Sair. -->
+        <aside class="w-64 bg-somengil-dark border-r border-gray-900 flex flex-col z-10 shadow-xl relative overflow-hidden">
+            
+            <!-- Conteúdo da Sidebar -->
+            <div class="relative z-10 flex flex-col flex-1 h-full">
+
+                <div class="p-6 border-b border-gray-800">
+                    <h2 class="font-bold text-xl text-white">Checklist</h2>
+                    <div class="flex items-center mt-2 text-sm text-blue-300 font-mono bg-gray-900/50 px-2 py-1 rounded w-fit">
+                        <span id="display-serial">Sheet #...</span>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex-1 overflow-hidden py-2 space-y-0.5">
+                    <!-- Section 1 -->
+                    <button id="btn-section-1" onclick="switchTab('section-1')" class="nav-item sidebar-dark-active w-full text-left px-6 py-2 text-sm font-medium transition-colors flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <span class="section-icon w-6 h-6 rounded-full bg-blue-100 text-somengil-blue group-[.sidebar-dark-active]:bg-somengil-blue group-[.sidebar-dark-active]:text-white flex items-center justify-center text-xs mr-3">I</span>
+                            Técnico Somengil
+                        </div>
+                        <span id="pct-section-1" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    </button>
+                    <!-- Section 2 -->
+                    <button id="btn-section-2" onclick="switchTab('section-2')" class="nav-item sidebar-dark-inactive w-full text-left px-6 py-2 text-sm font-medium transition-colors flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">II</span>
+                            Cliente
+                        </div>
+                        <span id="pct-section-2" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    </button>
+                    <!-- Section 3 -->
+                    <button id="btn-section-3" onclick="switchTab('section-3')" class="nav-item sidebar-dark-inactive w-full text-left px-6 py-2 text-sm font-medium transition-colors flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">III</span>
+                            Equipamento
+                        </div>
+                        <span id="pct-section-3" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    </button>
+                    <!-- Section 4 -->
+                    <button id="btn-section-4" onclick="switchTab('section-4')" class="nav-item sidebar-dark-inactive w-full text-left px-6 py-2 text-sm font-medium transition-colors flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">IV</span>
+                            Montagem
+                        </div>
+                        <span id="pct-section-4" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    </button>
+                    <!-- Section 5 -->
+                    <button id="btn-section-5" onclick="switchTab('section-5')" class="nav-item sidebar-dark-inactive w-full text-left px-6 py-2 text-sm font-medium transition-colors flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">V</span>
+                            Logística & Local
+                        </div>
+                        <span id="pct-section-5" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    </button>
+                    <!-- Section 6 -->
+                    <button id="btn-section-6" onclick="switchTab('section-6')" class="nav-item sidebar-dark-inactive w-full text-left px-6 py-2 text-sm font-medium transition-colors flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">VI</span>
+                            Info & Medições
+                        </div>
+                        <span id="pct-section-6" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    </button>
+                    <!-- Section 7: Fotos e Ficheiros (NOVO) -->
+                    <button id="btn-section-7" onclick="switchTab('section-7')" class="nav-item sidebar-dark-inactive w-full text-left px-6 py-2 text-sm font-medium transition-colors flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">VII</span>
+                            Fotos & Ficheiros
+                        </div>
+                        <span id="pct-section-7" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    </button>
+                </nav>
+                
+                <!-- Progress Widget (Movido para cima, após a navegação) -->
+                <div class="p-3 bg-gradient-to-b from-black to-transparent border-t border-gray-800">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Progresso Global</div>
+                    <div class="flex items-center justify-between">
+                        <div class="chart-container" style="max-width: 80px; height: 80px;">
+                            <canvas id="progressChart"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center text-sm font-bold text-white pointer-events-none" id="progress-text">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem (Movida abaixo do Progress Widget) -->
+                <div class="px-0 pb-4 z-0 pointer-events-none">
+                    <!--  -->
+                    <img src="https://static.wixstatic.com/media/a6967f_2b78d1e889464ca6858ed9102df64d18~mv2.png" 
+                         onerror="this.onerror=null; this.src='https://placehold.co/200x50/000000/ffffff?text=SOMENGIL+LOGO'"
+                         alt="Logótipo Somengil" class="w-full opacity-80">
+                </div>
+
+                <!-- Logout -->
+                <button onclick="logout()" class="p-4 text-center text-sm text-red-400 hover:text-red-300 hover:bg-gray-900 transition border-t border-somengil-dark">
+                    Sair
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+            
+            <!-- Content Scroll Area -->
+            <div class="flex-1 overflow-y-auto p-8 pb-32">
+                
+                <div class="max-w-4xl mx-auto">
+                    
+                    <!-- Loader -->
+                    <div id="loader" class="hidden absolute inset-0 bg-white/80 z-50 flex items-center justify-center backdrop-blur-sm">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-somengil-blue"></div>
+                    </div>
+
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-bold text-somengil-dark">Formulário de Verificação Editável</h1>
+                        <p class="text-slate-500">Preencha e edite os dados. O progresso de preenchimento é visível na barra lateral.</p>
+                    </div>
+
+                    <!-- SECTION 1: TÉCNICO -->
+                    <div id="section-1" class="content-section">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">I. Identificação do Técnico SOMENGIL</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Técnico</label>
+                                    <input type="text" id="field-tecnicoNome" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <div class="relative">
+                                        <input type="email" id="field-tecnicoEmail" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none pr-32" oninput="saveData()">
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-slate-400 sm:text-sm">@somengil.com</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefone (+351)</label>
+                                    <input type="text" id="field-tecnicoTelefone" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: CLIENTE -->
+                    <div id="section-2" class="content-section hidden">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">II. Identificação do Cliente</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Cliente</label>
+                                    <input type="text" id="field-clienteNome" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nº Contribuinte</label>
+                                    <input type="text" id="field-clienteNIF" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" id="field-clienteEmail" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Morada</label>
+                                    <input type="text" id="field-clienteMorada" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Código Postal</label>
+                                    <input type="text" id="field-clienteCodigoPostal" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                                    <input type="text" id="field-clienteCidade" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
+                                    <input type="text" id="field-clientePais" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Representante</label>
+                                    <input type="text" id="field-clienteRepresentante" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                                    <input type="text" id="field-clienteTelefone" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: EQUIPAMENTO -->
+                    <div id="section-3" class="content-section hidden">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">III. Equipamento</h3>
+                            
+                            <!-- Modelo -->
+                            <div class="mb-6" onchange="saveData()">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Modelo</label>
+                                <div class="flex flex-wrap gap-4">
+                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
+                                        <input type="radio" name="equipamentoModelo" value="MWS 300" class="form-radio">
+                                        <span>MWS 300</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
+                                        <input type="radio" name="equipamentoModelo" value="MWS 500" class="form-radio">
+                                        <span>MWS 500</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
+                                        <input type="radio" name="equipamentoModelo" value="MWS 700" class="form-radio">
+                                        <span>MWS 700</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Voltagem -->
+                            <div class="mb-6" onchange="saveData()">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Voltagem</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="208V" class="form-radio"> <span>208V</span></label>
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="220V" class="form-radio"> <span>220V</span></label>
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="230V" class="form-radio"> <span>230V</span></label>
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="380V" class="form-radio"> <span>380V</span></label>
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="400V" class="form-radio"> <span>400V</span></label>
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="440V" class="form-radio"> <span>440V</span></label>
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="480V" class="form-radio"> <span>480V</span></label>
+                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="575V" class="form-radio"> <span>575V</span></label>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" onchange="saveData()">
+                                <!-- Frequencia -->
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Frequência</label>
+                                    <div class="flex gap-4">
+                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoFrequencia" value="50Hz" class="form-radio"> <span>50Hz</span></label>
+                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoFrequencia" value="60Hz" class="form-radio"> <span>60Hz</span></label>
+                                    </div>
+                                </div>
+                                <!-- Aquecimento -->
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Aquecimento</label>
+                                    <div class="flex gap-4">
+                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoAquecimento" value="Electrico" class="form-radio"> <span>Elétrico</span></label>
+                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoAquecimento" value="Vapor" class="form-radio"> <span>Vapor</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: MONTAGEM -->
+                    <div id="section-4" class="content-section hidden">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">IV. Condição de Montagem</h3>
+                            
+                            <div class="space-y-6" onchange="saveData()">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado de entrega</label>
+                                    <div class="flex flex-col sm:flex-row gap-4">
+                                        <label class="flex items-center space-x-2"><input type="radio" name="condicaoMontagem" value="Assemblada" class="form-radio"> <span>Assemblada</span></label>
+                                        <label class="flex items-center space-x-2"><input type="radio" name="condicaoMontagem" value="Parcialmente desmontada" class="form-radio"> <span>Parcialmente desmontada</span></label>
+                                        <label class="flex items-center space-x-2"><input type="radio" name="condicaoMontagem" value="Desmontada" class="form-radio"> <span>Desmontada</span></label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Instalação</label>
+                                    <div class="flex gap-4">
+                                        <label class="flex items-center space-x-2"><input type="radio" name="instalacaoTipo" value="Enterrada" class="form-radio"> <span>Enterrada</span></label>
+                                        <label class="flex items-center space-x-2"><input type="radio" name="instalacaoTipo" value="Sola" class="form-radio"> <span>Solo</span></label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Responsabilidade Gradil</label>
+                                    <div class="flex gap-4">
+                                        <label class="flex items-center space-x-2"><input type="radio" name="responsabilidadeGradil" value="Somengil" class="form-radio"> <span>Somengil</span></label>
+                                        <label class="flex items-center space-x-2"><input type="radio" name="responsabilidadeGradil" value="Cliente" class="form-radio"> <span>Cliente</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 5: LOGÍSTICA (Checklist style) -->
+                    <div id="section-5" class="content-section hidden">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                            <h3 class="text-lg font-semibold text-somengil-blue p-6 pb-4 border-b border-gray-100">V. Logística e Local</h3>
+                            
+                            <!-- Helper for Radio Row (onchange is added to the container for saveData) -->
+                            <script>
+                                function renderToggleRow(label, name) {
+                                    document.write(`
+                                    <div class="flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 transition" onchange="saveData()">
+                                        <span class="text-sm text-gray-700 pr-4">${label}</span>
+                                        <div class="flex items-center space-x-4">
+                                            <label class="inline-flex items-center cursor-pointer">
+                                                <input type="radio" name="${name}" value="Sim" class="form-radio text-emerald-600 focus:ring-emerald-500">
+                                                <span class="ml-2 text-sm text-gray-600">Sim</span>
+                                            </label>
+                                            <label class="inline-flex items-center cursor-pointer">
+                                                <input type="radio" name="${name}" value="Não" class="form-radio text-red-500 focus:ring-red-500">
+                                                <span class="ml-2 text-sm text-gray-600">Não</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    `);
+                                }
+                            </script>
+
+                            <div class="divide-y divide-gray-100">
+                                <!-- Logística -->
+                                <div class="bg-gray-50 p-2 px-4 text-xs font-bold text-gray-500 uppercase">Acesso e Descarga</div>
+                                <script>
+                                    renderToggleRow("Pode receber um camião TIR?", "podeReceberTIR");
+                                    renderToggleRow("Tem empilhador (2.5Ton)?", "temEmpilhador");
+                                    renderToggleRow("Tem capacidade descarregar o equipamento sem a presença de Técnico Somengil?", "podeDescarregarSemTecnico");
+                                    renderToggleRow("Tem técnico para auxiliar na instalação do equipamento?", "temTecnicoAuxiliar");
+                                    renderToggleRow("Pode armazenar equipamento?", "podeArmazenar");
+                                    renderToggleRow("É necessário cintas?", "necessarioCintas");
+                                </script>
+
+                                <!-- Instalações -->
+                                <div class="bg-gray-50 p-2 px-4 text-xs font-bold text-gray-500 uppercase">Infraestruturas</div>
+                                <script>
+                                    renderToggleRow("Tem água na sala?", "temAguaSala");
+                                </script>
+                                <div class="p-4 border-b border-gray-50 flex items-center justify-between">
+                                    <span class="text-sm text-gray-700">Tamanho adaptador água</span>
+                                    <input type="text" id="field-adaptadorAguaTamanho" class="w-32 text-right p-1 border-b border-gray-300 outline-none focus:border-somengil-blue text-sm" placeholder="Ex: 1/2" oninput="saveData()">
+                                </div>
+                                <script>
+                                    renderToggleRow("Tem energia eléctrica?", "temEnergiaEletrica");
+                                    renderToggleRow("Tem escadas?", "temEscadas");
+                                    renderToggleRow("Tem ficha eléctrica?", "temFichaEletrica");
+                                </script>
+                                <div class="p-4 border-b border-gray-50 flex items-center justify-between bg-blue-50/50" onchange="saveData()">
+                                    <span class="text-sm text-gray-700 font-medium">Opção dos Amperes</span>
+                                    <div class="flex space-x-3 text-xs">
+                                        <label><input type="radio" name="amperesOpcao" value="16A SP" class="form-radio"> 16A SP</label>
+                                        <label><input type="radio" name="amperesOpcao" value="32A 5P" class="form-radio"> 32A 5P</label>
+                                        <label><input type="radio" name="amperesOpcao" value="63A SP" class="form-radio"> 63A SP</label>
+                                    </div>
+                                </div>
+
+                                <!-- Preparação -->
+                                <div class="bg-gray-50 p-2 px-4 text-xs font-bold text-gray-500 uppercase">Preparação</div>
+                                <script>
+                                    renderToggleRow("Tem detergentes?", "temDetergentes");
+                                    renderToggleRow("Documentação p/ entrar na Fábrica?", "documentacaoFabrica");
+                                    renderToggleRow("Equipamento Proteção Obrigatório?", "equipamentoProtecao");
+                                    renderToggleRow("Chão acabado?", "chaoAcabado");
+                                    renderToggleRow("Dreno preparado?", "drenoPreparado");
+                                    renderToggleRow("Ventilação preparada?", "ventilacaoPreparada");
+                                    renderToggleRow("Utensílios sujos para testes?", "temUtensiliosSujos");
+                                </script>
+
+                                <!-- Pessoal -->
+                                <div class="bg-gray-50 p-2 px-4 text-xs font-bold text-gray-500 uppercase">Pessoal</div>
+                                <div class="p-4 border-b border-gray-50">
+                                    <div class="flex justify-between items-center mb-2" onchange="saveData()">
+                                        <span class="text-sm text-gray-700">Operador presente na formação?</span>
+                                        <div class="flex space-x-2">
+                                            <label><input type="radio" name="operadorPresente" value="Sim" class="form-radio"> Sim</label>
+                                            <label><input type="radio" name="operadorPresente" value="Não" class="form-radio"> Não</label>
+                                        </div>
+                                    </div>
+                                    <input type="text" id="field-operadorNome" class="w-full text-sm p-2 bg-gray-50 rounded border border-gray-200" placeholder="Nome do Operador..." oninput="saveData()">
+                                </div>
+                                <div class="p-4 border-b border-gray-50">
+                                    <div class="flex justify-between items-center mb-2" onchange="saveData()">
+                                        <span class="text-sm text-gray-700">Responsável Comissionamento presente?</span>
+                                        <div class="flex space-x-2">
+                                            <label><input type="radio" name="responsavelComissionamentoPresente" value="Sim" class="form-radio"> Sim</label>
+                                            <label><input type="radio" name="responsavelComissionamentoPresente" value="Não" class="form-radio"> Não</label>
+                                        </div>
+                                    </div>
+                                    <input type="text" id="field-responsavelComissionamentoNome" class="w-full text-sm p-2 bg-gray-50 rounded border border-gray-200" placeholder="Nome do Responsável..." oninput="saveData()">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 6: INFO EXTRA -->
+                    <div id="section-6" class="content-section hidden">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">VI. Informação Adicional</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Ligações Pressão Água (2bar rec.)</label>
+                                    <textarea id="field-ligacoesPressaoAgua" rows="2" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none" oninput="saveData()"></textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Marca Produtos Químicos</label>
+                                    <input type="text" id="field-marcaProdutosQuimicos" class="w-full p-2 border border-gray-300 rounded outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Entrega Prevista</label>
+                                    <input type="date" id="field-dataEntregaPrevista" class="w-full p-2 border border-gray-300 rounded outline-none" oninput="saveData()">
+                                </div>
+
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Medições (cm)</label>
+                                    <div class="grid grid-cols-3 gap-4">
+                                        <div>
+                                            <span class="text-xs text-slate-500">Porta (Largura - cm)</span>
+                                            <input type="number" id="field-medicaoPortaLargura" class="w-full p-2 border border-gray-300 rounded mt-1" oninput="saveData()">
+                                        </div>
+                                        <div>
+                                            <span class="text-xs text-slate-500">Porta (Altura - cm)</span>
+                                            <input type="number" id="field-medicaoPortaAltura" class="w-full p-2 border border-gray-300 rounded mt-1" oninput="saveData()">
+                                        </div>
+                                        <div>
+                                            <span class="text-xs text-slate-500">Chão ao Teto (cm)</span>
+                                            <input type="number" id="field-medicaoChaoTecto" class="w-full p-2 border border-gray-300 rounded mt-1" oninput="saveData()">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Horário Trabalho (Início)</label>
+                                    <input type="time" id="field-horarioTrabalhoInicio" class="w-full p-2 border border-gray-300 rounded outline-none" oninput="saveData()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Horário Trabalho (Fim)</label>
+                                    <input type="time" id="field-horarioTrabalhoFim" class="w-full p-2 border border-gray-300 rounded outline-none" oninput="saveData()">
+                                </div>
+
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Observações Gerais</label>
+                                    <textarea id="field-observacoes" rows="4" class="w-full p-2 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none bg-yellow-50/30" oninput="saveData()"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SECTION 7: FOTOS E FICHEIROS (NOVO) -->
+                    <div id="section-7" class="content-section hidden">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">VII. Links de Fotos e Ficheiros</h3>
+                            <p class="text-slate-500 mb-4 text-sm">Insira aqui as URLs (links) para a pasta no Google Drive, Dropbox ou links diretos para fotos de comprovação da instalação. Use enter para separar diferentes links.</p>
+                            
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Links / URLs de Ficheiros</label>
+                            <textarea id="field-linksFotosFicheiros" rows="8" class="w-full p-3 border border-gray-300 rounded focus:border-somengil-blue focus:ring-1 focus:ring-somengil-blue outline-none bg-indigo-50/20 font-mono text-sm" placeholder="Ex: https://drive.google.com/folder/somengil-999..." oninput="saveData()"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer Action Bar -->
+            <div class="h-20 bg-white border-t border-gray-200 flex items-center justify-between px-8 z-20">
+                <div class="flex flex-col text-sm">
+                    <span id="save-status" class="text-xs text-emerald-600 font-medium">Aguardando conexão...</span>
+                    <span class="text-xs text-gray-400">Fonte de dados: Google Sheets via Apps Script.</span>
+                </div>
+                <div class="flex space-x-4">
+                    <button id="save-btn" onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-2 px-8 rounded-lg shadow-lg shadow-somengil-blue/30 transition-all flex items-center">
+                        <span class="mr-2">💾</span> Guardar Alterações
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
