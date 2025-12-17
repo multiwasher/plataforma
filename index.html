@@ -119,6 +119,53 @@
             color: #ffffff;
             font-weight: 700;
         }
+        
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .sidebar-overlay {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s;
+            }
+            .sidebar-overlay.active {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            aside.sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                z-index: 50;
+                transition: left 0.3s;
+            }
+            aside.sidebar.open {
+                left: 0;
+            }
+            #mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+        @media (min-width: 769px) {
+            aside.sidebar {
+                position: relative;
+                left: 0 !important;
+            }
+            #mobile-menu-btn {
+                display: none !important;
+            }
+            .mobile-close-btn {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="text-somengil-dark h-screen flex flex-col overflow-hidden">
@@ -563,6 +610,33 @@
         }
 
 
+        // --- Mobile Sidebar Functions ---
+        window.toggleMobileSidebar = function() {
+            const sidebar = document.querySelector('aside.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        };
+        
+        window.closeMobileSidebar = function() {
+            const sidebar = document.querySelector('aside.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        };
+        
+        // Fechar sidebar ao clicar em uma seção (mobile)
+        document.addEventListener('DOMContentLoaded', function() {
+            const navButtons = document.querySelectorAll('.nav-item');
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        closeMobileSidebar();
+                    }
+                });
+            });
+        });
+
         // --- UI Logic ---
 
         window.switchTab = (tabId, initial = false) => {
@@ -802,18 +876,29 @@
     <!-- App View (Checklist Principal) -->
     <div id="app-view" class="hidden flex h-screen">
         
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+        
         <!-- Sidebar -->
         <!-- Fundo PRETO, texto branco. Reordenado: Navegação > Progresso > Imagem > Sair. -->
-        <aside class="w-[278px] bg-somengil-dark border-r border-gray-900 flex flex-col z-10 shadow-xl relative overflow-hidden rounded-tr-3xl rounded-br-3xl">
+        <aside class="sidebar w-[278px] bg-somengil-dark border-r border-gray-900 flex flex-col z-10 shadow-xl relative overflow-hidden rounded-tr-3xl rounded-br-3xl md:rounded-tr-3xl md:rounded-br-3xl rounded-none">
             
             <!-- Conteúdo da Sidebar -->
             <div class="relative z-10 flex flex-col flex-1 h-full">
 
-                <div class="px-6 py-4 border-b border-gray-800">
-                    <h2 class="font-bold text-xl text-white">Checklist</h2>
-                    <div class="flex items-center mt-2 text-sm text-blue-300 font-mono bg-gray-900/50 px-2 py-1 rounded w-fit">
-                        <span id="display-serial">Sheet #...</span>
+                <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                    <div class="flex-1">
+                        <h2 class="font-bold text-xl text-white">Checklist</h2>
+                        <div class="flex items-center mt-2 text-sm text-blue-300 font-mono bg-gray-900/50 px-2 py-1 rounded w-fit">
+                            <span id="display-serial">Sheet #...</span>
+                        </div>
                     </div>
+                    <!-- Mobile Close Button -->
+                    <button onclick="closeMobileSidebar()" class="mobile-close-btn text-white hover:text-gray-300 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Navigation -->
@@ -903,12 +988,20 @@
         </aside>
 
         <!-- Main Content -->
-        <main style="background-color: #f7f7f7;" class="flex-1 flex flex-col h-screen overflow-hidden relative rounded-tl-3xl rounded-bl-3xl">
+        <main style="background-color: #f7f7f7;" class="flex-1 flex flex-col h-screen overflow-hidden relative rounded-tl-3xl rounded-bl-3xl md:rounded-tl-3xl md:rounded-bl-3xl rounded-none">
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" onclick="toggleMobileSidebar()" 
+                class="hidden fixed top-4 left-4 z-30 bg-somengil-blue text-white p-3 rounded-lg shadow-lg hover:bg-somengil-accent transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
             
             <!-- Content Scroll Area -->
-            <div class="flex-1 overflow-y-auto p-8 pb-32">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-32">
                 
-                <div class="max-w-4xl mx-auto">
+                <div class="max-w-4xl mx-auto w-full">
                     
                     <!-- Loader -->
                     <div id="loader" class="hidden absolute inset-0 bg-white/80 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -916,15 +1009,15 @@
                     </div>
 
                     <!-- Header -->
-                    <div class="mb-8">
-                        <h1 class="text-2xl font-bold text-somengil-dark">Formulário de Verificação Editável</h1>
-                        <p class="text-slate-500">Preencha e edite os dados. O progresso de preenchimento é visível na barra lateral.</p>
+                    <div class="mb-6 md:mb-8">
+                        <h1 class="text-xl md:text-2xl font-bold text-somengil-dark">Formulário de Verificação Editável</h1>
+                        <p class="text-sm md:text-base text-slate-500">Preencha e edite os dados. O progresso de preenchimento é visível na barra lateral.</p>
                     </div>
 
                     <!-- SECTION 1: TÉCNICO -->
                     <div id="section-1" class="content-section">
-                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">I. Identificação do Técnico SOMENGIL</h3>
+                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100">I. Identificação do Técnico SOMENGIL</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Técnico</label>
@@ -949,8 +1042,8 @@
 
                     <!-- SECTION 2: CLIENTE -->
                     <div id="section-2" class="content-section hidden">
-                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">II. Identificação do Cliente</h3>
+                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100">II. Identificação do Cliente</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Cliente</label>
@@ -994,8 +1087,8 @@
 
                     <!-- SECTION 3: EQUIPAMENTO -->
                     <div id="section-3" class="content-section hidden">
-                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100">III. Equipamento</h3>
+                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100">III. Equipamento</h3>
                             
                             <!-- Modelo -->
                             <div class="mb-6" onchange="saveData()">
@@ -1054,8 +1147,8 @@
 
                     <!-- SECTION 4: MONTAGEM -->
                     <div id="section-4" class="content-section hidden">
-                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100" data-translate="IV. Montagem">IV. Condição de Montagem</h3>
+                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100" data-translate="IV. Montagem">IV. Condição de Montagem</h3>
                             
                             <div class="space-y-6" onchange="saveData()">
                                 <div>
@@ -1088,8 +1181,8 @@
 
                     <!-- SECTION 5: LOGÍSTICA (Checklist style) -->
                     <div id="section-5" class="content-section hidden">
-                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                            <h3 class="text-lg font-semibold text-somengil-blue p-6 pb-4 border-b border-gray-100" data-translate="V. Logística & Local">V. Logística e Local</h3>
+                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue p-4 md:p-6 pb-3 md:pb-4 border-b border-gray-100" data-translate="V. Logística & Local">V. Logística e Local</h3>
                             
                             <!-- Helper for Radio Row (onchange is added to the container for saveData) -->
                             <script>
@@ -1192,8 +1285,8 @@
 
                     <!-- SECTION 6: INFO EXTRA -->
                     <div id="section-6" class="content-section hidden">
-                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100" data-translate="VI. Info & Medições">VI. Informação Adicional</h3>
+                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100" data-translate="VI. Info & Medições">VI. Informação Adicional</h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="col-span-1 md:col-span-2">
@@ -1247,8 +1340,8 @@
                     
                     <!-- SECTION 7: FOTOS E FICHEIROS (NOVO) -->
                     <div id="section-7" class="content-section hidden">
-                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                            <h3 class="text-lg font-semibold text-somengil-blue mb-4 pb-2 border-b border-gray-100" data-translate="VII. Fotos e Ficheiros">VII. Fotos e Ficheiros</h3>
+                        <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100" data-translate="VII. Fotos e Ficheiros">VII. Fotos e Ficheiros</h3>
                             <p class="text-slate-500 mb-4 text-sm">Carregue fotos de comprovação da instalação. As imagens serão enviadas automaticamente para <strong>qualidade@somengil.com</strong>.</p>
                             
                             <div class="mb-4">
