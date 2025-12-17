@@ -690,8 +690,9 @@
     </script>
 
     <!-- Action Selection View (Substitui o login inicial) -->
-    <div id="action-view" class="flex items-center justify-center min-h-screen bg-somengil-light">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg text-center">
+    <div id="action-view" class="fixed inset-0 overflow-y-scroll bg-somengil-light">
+        <div class="min-h-screen flex items-center justify-center p-4 md:p-8">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-lg text-center my-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-somengil-dark tracking-tight" data-translate="MULTI WASHER">MULTI WASHER</h1>
                 <p class="text-somengil-blue font-semibold uppercase text-xs tracking-widest mt-1" data-translate="Plataforma de Instalação">Plataforma de Instalação</p>
@@ -747,13 +748,15 @@
             <div class="mt-8 pt-6 border-t border-slate-100 text-xs text-slate-400">
                 &copy; Somengil 2025.
             </div>
+            </div>
         </div>
     </div>
 
 
     <!-- Creation Form View (Formulário Mínimo de Criação) -->
-    <div id="creation-form-view" class="hidden flex items-center justify-center min-h-screen bg-somengil-light">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl">
+    <div id="creation-form-view" class="hidden fixed inset-0 overflow-y-scroll bg-somengil-light">
+        <div class="min-h-screen flex items-center justify-center p-4 md:p-8">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-4xl my-8">
             <h2 class="text-2xl font-bold text-somengil-blue mb-2" data-translate="Novo Equipamento - Dados Iniciais">Novo Equipamento - Dados Iniciais</h2>
             <p class="text-slate-500 mb-6" data-translate="Estes dados serão usados para criar o novo separador da checklist.">Estes dados serão usados para criar o novo separador da checklist.</p>
             
@@ -869,6 +872,7 @@
                     </button>
                 </div>
             </form>
+            </div>
         </div>
     </div>
 
