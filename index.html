@@ -344,7 +344,7 @@
             
             // Recarrega o formulário principal com os dados
             populateForm(state.data);
-            calculateAndDisplayProgress(state.data);
+            window.calculateAndDisplayProgress(state.data);
             switchTab('section-1', true); // Garante que a primeira aba é mostrada e tem a classe escura ativa
             showLoading(false);
         };
@@ -377,7 +377,7 @@
             document.getElementById('footer-action-bar').style.display = 'block';
             document.getElementById('display-serial').innerText = `Sheet #${state.serial}`;
             
-            await loadSheetData(state.serial);
+            await window.loadSheetData(state.serial);
             switchTab('section-1', true); // Garante que a primeira aba é mostrada e tem a classe escura ativa
         };
 
@@ -491,7 +491,7 @@
                     setTimeout(() => statusEl.classList.add('hidden'), 3000);
                 }
                 
-                calculateAndDisplayProgress(state.data); 
+                window.calculateAndDisplayProgress(state.data); 
 
             } catch (error) {
                 console.error("Save error:", error);
@@ -539,7 +539,7 @@
             }
         }
 
-        async function loadSheetData(serial) {
+        window.loadSheetData = async function(serial) {
             showLoading(true);
             try {
                 // Requisição de leitura para o Apps Script
@@ -561,10 +561,10 @@
                     // Dados encontrados: Carrega e preenche o formulário. Usa emptyDefaults como base.
                     state.data = { ...emptyDefaults, ...result.data };
                     populateForm(state.data);
-                    calculateAndDisplayProgress(state.data);
+                    window.calculateAndDisplayProgress(state.data);
                     
                     // Exibir log de envios se houver
-                    displayPhotoLog(state.data.dataEnvioFotos);
+                    window.displayPhotoLog(state.data.dataEnvioFotos);
                     
                     document.getElementById('save-status').innerText = "Dados carregados da Google Sheet.";
                     document.getElementById('save-status').classList.remove('text-red-500', 'text-yellow-500');
@@ -573,7 +573,7 @@
                     // Separador não encontrado: Começa com dados padrão (O Apps Script deve criar na 1ª gravação)
                     state.data = { ...emptyDefaults }; // Se não encontrou, começa VAZIO
                     populateForm(state.data);
-                    calculateAndDisplayProgress(state.data);
+                    window.calculateAndDisplayProgress(state.data);
                     document.getElementById('save-status').innerText = "Folha não encontrada. Preparada para nova criação.";
                     document.getElementById('save-status').classList.remove('text-red-500', 'text-emerald-600');
                     document.getElementById('save-status').classList.add('text-yellow-500');
@@ -650,7 +650,7 @@
          * Exibe o log de envios de fotos na UI
          * @param {string} dataEnvioFotos String com timestamps separados por \n
          */
-        function displayPhotoLog(dataEnvioFotos) {
+        window.displayPhotoLog = function(dataEnvioFotos) {
             const logContainer = document.getElementById('log-envios-container');
             const logContent = document.getElementById('log-envios-content');
             
@@ -677,7 +677,7 @@
          * Calcula o progresso global e por secção e atualiza o gráfico e a navegação.
          * @param {object} data Dados do formulário
          */
-        function calculateAndDisplayProgress(data) {
+        window.calculateAndDisplayProgress = function(data) {
             let totalGlobal = 0;
             let filledGlobal = 0;
             const sectionProgress = {
@@ -838,7 +838,7 @@
 
             // Garante que o ícone do gráfico na sidebar é recalculado para ter as cores corretas do fundo escuro
             if (!initial) {
-                 calculateAndDisplayProgress(state.data);
+                 window.calculateAndDisplayProgress(state.data);
             }
             state.activeTab = tabId;
         };
@@ -1904,7 +1904,7 @@
                                     
                                     // Recarregar dados do Sheet para obter o valor "Sim" atualizado pelo Apps Script
                                     if (window.appState && window.appState.serial) {
-                                        await loadSheetData(window.appState.serial);
+                                        await window.loadSheetData(window.appState.serial);
                                         calculateAndDisplayProgress(window.appState.data);
                                         displayPhotoLog(window.appState.data.dataEnvioFotos);
                                     }
