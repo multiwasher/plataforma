@@ -82,28 +82,50 @@
             scrollbar-width: none;
         }
         /* Custom radio styling for better touch target */
+        input[type="radio"],
+        input[type="radio"].form-radio,
         .form-radio {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            width: 1rem;
-            height: 1rem;
-            border-radius: 50%;
-            border: 2px solid #9ca3af; /* Gray-400 */
-            transition: all 0.2s;
-            cursor: pointer;
-            display: inline-block;
-            position: relative;
-            flex-shrink: 0;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            border-radius: 50% !important;
+            border: 2px solid #6b7280 !important; /* Gray-500 - mais escuro */
+            transition: all 0.2s !important;
+            cursor: pointer !important;
+            display: inline-block !important;
+            position: relative !important;
+            flex-shrink: 0 !important;
+            background-color: white !important;
+            margin: 0 !important;
+            vertical-align: middle !important;
         }
+        input[type="radio"]:checked,
+        input[type="radio"].form-radio:checked,
         .form-radio:checked {
-            border-color: transparent;
-            background-color: #004aad; /* Somengil Blue */
-            box-shadow: 0 0 0 4px #e6f0ff; /* Ring-2 Light Blue */
+            border-color: #004aad !important;
+            background-color: #004aad !important; /* Somengil Blue */
+            box-shadow: 0 0 0 4px #e6f0ff !important; /* Ring-2 Light Blue */
         }
+        input[type="radio"]:checked::after,
+        input[type="radio"].form-radio:checked::after,
+        .form-radio:checked::after {
+            content: '' !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 0.5rem !important;
+            height: 0.5rem !important;
+            border-radius: 50% !important;
+            background-color: white !important;
+        }
+        input[type="radio"]:focus,
+        input[type="radio"].form-radio:focus,
         .form-radio:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.5);
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.3) !important;
         }
         
         /* Estilos para botões de idioma */
@@ -364,12 +386,17 @@
                                 newData[key] = input.value;
                              }
                         } else {
-                            // Trata campos de rádio/checkbox
+                            // Trata campos de rádio/checkbox E hidden inputs dos botões toggle
                             const checkedRadio = document.querySelector(`input[name="${key}"]:checked`);
+                            const hiddenInput = document.querySelector(`input[type="hidden"][name="${key}"]`);
+                            
                             if (checkedRadio) {
                                 newData[key] = checkedRadio.value;
+                            } else if (hiddenInput) {
+                                // Para botões toggle que usam hidden inputs
+                                newData[key] = hiddenInput.value || emptyDefaults[key] || "";
                             } else {
-                                 // Se não for rádio checked, assume o valor vazio/nulo do emptyDefaults
+                                 // Se não for rádio checked nem hidden input, assume o valor vazio/nulo do emptyDefaults
                                  newData[key] = emptyDefaults[key] || "";
                             }
                         }
@@ -521,7 +548,35 @@
                         }
                     });
                 }
+                
+                // Handle toggle buttons for Logística section
+                const hiddenInput = document.querySelector(`input[type="hidden"][name="${key}"]`);
+                if (hiddenInput && val) {
+                    hiddenInput.value = val;
+                    // Activate the corresponding button
+                    const buttons = document.querySelectorAll(`button[data-name="${key}"]`);
+                    buttons.forEach(btn => {
+                        btn.classList.remove('btn-active-yes', 'btn-active-no', 'btn-inactive');
+                        if (btn.getAttribute('data-value') === val) {
+                            if (val === 'Sim') {
+                                btn.classList.add('btn-active-yes');
+                            } else if (val === 'Não') {
+                                btn.classList.add('btn-active-no');
+                            }
+                        } else {
+                            btn.classList.add('btn-inactive');
+                        }
+                    });
+                }
             }
+            
+            // Initialize all toggle buttons that don't have a value yet
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                if (!btn.classList.contains('btn-active-yes') && 
+                    !btn.classList.contains('btn-active-no')) {
+                    btn.classList.add('btn-inactive');
+                }
+            });
         }
 
         // --- Visualization Logic (Progress) ---
@@ -892,6 +947,7 @@
                                 <div class="flex gap-4">
                                     <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="creation-responsabilidadeGradil" value="Cliente" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Cliente">Cliente</span></label>
                                     <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="creation-responsabilidadeGradil" value="Somengil" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Somengil">Somengil</span></label>
+                                    <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="creation-responsabilidadeGradil" value="SOMENGIL" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="SOMENGIL">SOMENGIL</span></label>
                                 </div>
                             </div>
                         </div>
@@ -1219,6 +1275,7 @@
                                     <div class="flex gap-4">
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="responsabilidadeGradil" value="Cliente" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Cliente">Cliente</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="responsabilidadeGradil" value="Somengil" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Somengil">Somengil</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="responsabilidadeGradil" value="SOMENGIL" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="SOMENGIL">SOMENGIL</span></label>
                                     </div>
                                 </div>
                             </div>
@@ -1230,7 +1287,7 @@
                         <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4 md:mb-6">
                             <h3 class="text-base md:text-lg font-semibold text-somengil-blue p-4 md:p-6 pb-3 md:pb-4 border-b border-gray-100" data-translate="V. Logística & Local">V. Logística e Local</h3>
                             
-                            <!-- Helper for Radio Row (onchange is added to the container for saveData) -->
+                            <!-- Helper for Toggle Button Row -->
                             <script>
                                 function renderToggleRow(label, name, translateKey) {
                                     const yesText = '<span data-translate="Sim">Sim</span>';
@@ -1238,22 +1295,83 @@
                                     const labelHtml = translateKey ? `<span data-translate="${translateKey}">${label}</span>` : label;
                                     
                                     document.write(`
-                                    <div class="flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 transition" onchange="saveData()">
+                                    <div class="flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 transition">
                                         <span class="text-sm text-gray-700 pr-4">${labelHtml}</span>
-                                        <div class="flex items-center space-x-4">
-                                            <label class="inline-flex items-center cursor-pointer">
-                                                <input type="radio" name="${name}" value="Sim" class="form-radio text-emerald-600 focus:ring-emerald-500">
-                                                <span class="ml-2 text-sm text-gray-600">${yesText}</span>
-                                            </label>
-                                            <label class="inline-flex items-center cursor-pointer">
-                                                <input type="radio" name="${name}" value="Não" class="form-radio text-red-500 focus:ring-red-500">
-                                                <span class="ml-2 text-sm text-gray-600">${noText}</span>
-                                            </label>
+                                        <input type="hidden" name="${name}" value="">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" 
+                                                    onclick="toggleLogistica(this, '${name}', 'Sim')" 
+                                                    class="toggle-btn px-6 py-2 rounded-lg font-medium text-sm transition-all border-2"
+                                                    data-name="${name}" 
+                                                    data-value="Sim">
+                                                ${yesText}
+                                            </button>
+                                            <button type="button" 
+                                                    onclick="toggleLogistica(this, '${name}', 'Não')" 
+                                                    class="toggle-btn px-6 py-2 rounded-lg font-medium text-sm transition-all border-2"
+                                                    data-name="${name}" 
+                                                    data-value="Não">
+                                                ${noText}
+                                            </button>
                                         </div>
                                     </div>
                                     `);
                                 }
+                                
+                                function toggleLogistica(btn, fieldName, value) {
+                                    // Remove active class from all buttons in this group
+                                    const container = btn.parentElement;
+                                    const allBtns = container.querySelectorAll('.toggle-btn');
+                                    allBtns.forEach(b => {
+                                        b.classList.remove('btn-active-yes', 'btn-active-no');
+                                        b.classList.add('btn-inactive');
+                                    });
+                                    
+                                    // Add active class to clicked button
+                                    btn.classList.remove('btn-inactive');
+                                    if (value === 'Sim') {
+                                        btn.classList.add('btn-active-yes');
+                                    } else {
+                                        btn.classList.add('btn-active-no');
+                                    }
+                                    
+                                    // Update hidden input
+                                    const hiddenInput = container.parentElement.querySelector(`input[name="${fieldName}"]`);
+                                    if (hiddenInput) {
+                                        hiddenInput.value = value;
+                                    }
+                                    
+                                    // Save data
+                                    saveData();
+                                }
                             </script>
+                            
+                            <style>
+                                .toggle-btn {
+                                    min-width: 80px;
+                                }
+                                .btn-inactive {
+                                    background-color: #f3f4f6;
+                                    border-color: #d1d5db;
+                                    color: #6b7280;
+                                }
+                                .btn-inactive:hover {
+                                    background-color: #e5e7eb;
+                                    border-color: #9ca3af;
+                                }
+                                .btn-active-yes {
+                                    background-color: #10b981;
+                                    border-color: #059669;
+                                    color: white;
+                                    font-weight: 600;
+                                }
+                                .btn-active-no {
+                                    background-color: #ef4444;
+                                    border-color: #dc2626;
+                                    color: white;
+                                    font-weight: 600;
+                                }
+                            </style>
 
                             <div class="divide-y divide-gray-100">
                                 <!-- Logística -->
@@ -1305,21 +1423,47 @@
                                 <!-- Pessoal -->
                                 <div class="bg-gray-50 p-2 px-4 text-xs font-bold text-gray-500 uppercase"><span data-translate="Pessoal">Pessoal</span></div>
                                 <div class="p-4 border-b border-gray-50">
-                                    <div class="flex justify-between items-center mb-2" onchange="saveData()">
+                                    <div class="flex justify-between items-center mb-2">
                                         <span class="text-sm text-gray-700" data-translate="Operador presente?">Operador presente na formação?</span>
-                                        <div class="flex space-x-2">
-                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="operadorPresente" value="Sim" class="form-radio text-emerald-600 focus:ring-emerald-500"> <span class="ml-1" data-translate="Sim">Sim</span></label>
-                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="operadorPresente" value="Não" class="form-radio text-red-500 focus:ring-red-500"> <span class="ml-1" data-translate="Não">Não</span></label>
+                                        <input type="hidden" name="operadorPresente" value="">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" 
+                                                    onclick="toggleLogistica(this, 'operadorPresente', 'Sim')" 
+                                                    class="toggle-btn px-6 py-2 rounded-lg font-medium text-sm transition-all border-2"
+                                                    data-name="operadorPresente" 
+                                                    data-value="Sim">
+                                                <span data-translate="Sim">Sim</span>
+                                            </button>
+                                            <button type="button" 
+                                                    onclick="toggleLogistica(this, 'operadorPresente', 'Não')" 
+                                                    class="toggle-btn px-6 py-2 rounded-lg font-medium text-sm transition-all border-2"
+                                                    data-name="operadorPresente" 
+                                                    data-value="Não">
+                                                <span data-translate="Não">Não</span>
+                                            </button>
                                         </div>
                                     </div>
                                     <input type="text" id="field-operadorNome" class="w-full text-sm p-2 bg-gray-50 rounded border border-gray-200" data-translate-placeholder="Nome do Operador" placeholder="Nome do Operador..." oninput="saveData()">
                                 </div>
                                 <div class="p-4 border-b border-gray-50">
-                                    <div class="flex justify-between items-center mb-2" onchange="saveData()">
+                                    <div class="flex justify-between items-center mb-2">
                                         <span class="text-sm text-gray-700" data-translate="Resp. Comission.">Responsável Comissionamento presente?</span>
-                                        <div class="flex space-x-2">
-                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="responsavelComissionamentoPresente" value="Sim" class="form-radio text-emerald-600 focus:ring-emerald-500"> <span class="ml-1" data-translate="Sim">Sim</span></label>
-                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="responsavelComissionamentoPresente" value="Não" class="form-radio text-red-500 focus:ring-red-500"> <span class="ml-1" data-translate="Não">Não</span></label>
+                                        <input type="hidden" name="responsavelComissionamentoPresente" value="">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" 
+                                                    onclick="toggleLogistica(this, 'responsavelComissionamentoPresente', 'Sim')" 
+                                                    class="toggle-btn px-6 py-2 rounded-lg font-medium text-sm transition-all border-2"
+                                                    data-name="responsavelComissionamentoPresente" 
+                                                    data-value="Sim">
+                                                <span data-translate="Sim">Sim</span>
+                                            </button>
+                                            <button type="button" 
+                                                    onclick="toggleLogistica(this, 'responsavelComissionamentoPresente', 'Não')" 
+                                                    class="toggle-btn px-6 py-2 rounded-lg font-medium text-sm transition-all border-2"
+                                                    data-name="responsavelComissionamentoPresente" 
+                                                    data-value="Não">
+                                                <span data-translate="Não">Não</span>
+                                            </button>
                                         </div>
                                     </div>
                                     <input type="text" id="field-responsavelComissionamentoNome" class="w-full text-sm p-2 bg-gray-50 rounded border border-gray-200" placeholder="Nome do Responsável..." oninput="saveData()">
