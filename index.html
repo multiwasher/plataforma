@@ -194,10 +194,7 @@
             }
         }
         
-        /* Esconder footer quando app-view está hidden */
-        #app-view.hidden #footer-action-bar {
-            display: none !important;
-        }
+
         
         /* Garantir scroll nas seções de conteúdo se necessário */
         .content-section {
@@ -354,7 +351,6 @@
             // 4. Transiciona para a aplicação principal
             document.getElementById('creation-form-view').classList.add('hidden');
             document.getElementById('app-view').classList.remove('hidden');
-            document.getElementById('footer-action-bar').style.display = 'block';
             document.getElementById('display-serial').innerText = `Sheet #${state.serial}`;
             
             // Recarrega o formulário principal com os dados
@@ -398,7 +394,6 @@
                 state.serial = serialInput;
                 document.getElementById('action-view').classList.add('hidden');
                 document.getElementById('app-view').classList.remove('hidden');
-                document.getElementById('footer-action-bar').style.display = 'block';
                 document.getElementById('display-serial').innerText = `Sheet #${state.serial}`;
                 
                 await window.loadSheetData(state.serial);
@@ -935,7 +930,6 @@
             state.serial = null;
             state.data = {};
             document.getElementById('app-view').classList.add('hidden');
-            document.getElementById('footer-action-bar').style.display = 'none';
             document.getElementById('creation-form-view').classList.add('hidden');
             document.getElementById('accessSerialInput').value = '';
             document.getElementById('creationSerialInput').value = '';
