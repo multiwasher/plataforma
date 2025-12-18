@@ -244,10 +244,21 @@ function handleFetchData(serialNumber) {
     // Itera sobre os dados e mapeia para chaves camelCase
     for (let i = 0; i < headers.length; i++) {
         const sheetHeader = headers[i];
-        const value = dataRow[i];
+        let value = dataRow[i];
         
         // Obtém a chave camelCase usando o mapeamento SHEET_TO_FORM_MAP
         const formKey = SHEET_TO_FORM_MAP[sheetHeader] || sheetHeader; // Usa o header se não mapeado
+        
+        // Converte valores Date para string vazio (evita problemas com campos de texto como "1/2" que o Sheets interpreta como data)
+        if (value instanceof Date) {
+            // Para campos que deveriam ser datas reais (dataEntregaPrevista), mantemos a data formatada
+            if (formKey === 'dataEntregaPrevista') {
+                value = Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+            } else {
+                // Para outros campos que foram interpretados como data mas são texto, ignoramos
+                value = "";
+            }
+        }
         
         finalData[formKey] = value === "" ? null : value; // Devolve nulo se a célula estiver vazia
     }
