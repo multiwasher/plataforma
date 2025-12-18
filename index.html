@@ -1856,6 +1856,13 @@
                                 // Obter modelo do equipamento
                                 const modeloEquipamento = window.appState?.data?.equipamentoModelo || 'UNKNOWN';
 
+                                console.log('📧 Iniciando envio de fotos:', {
+                                    serial: serialNumber,
+                                    modelo: modeloEquipamento,
+                                    numFotos: selectedImages.length,
+                                    appState: window.appState
+                                });
+
                                 sendBtn.disabled = true;
                                 sendBtn.textContent = 'Enviando...';
                                 statusDiv.className = 'mt-3 text-sm text-blue-600';
@@ -1889,24 +1896,54 @@
                                         images: imageData
                                     };
 
-                                    const response = await fetch(window.photoUploadState.GOOGLE_SHEET_API_URL, {
+                                    console.log('📤 Payload a enviar:', {
+                                        action: payload.action,
+                                        serial: payload.serial,
+                                        modelo: payload.modelo,
+                                        to: payload.to,
+                                        numImages: payload.images.length
+                                    });
+
+                                    // NOTA: Google Apps Script requer mode: 'no-cors' devido a política CORS
+                                    // Não conseguimos ler a resposta, mas podemos verificar se o Sheet foi atualizado depois
+                                    await fetch(window.photoUploadState.GOOGLE_SHEET_API_URL, {
                                         method: 'POST',
                                         mode: 'no-cors',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify(payload)
                                     });
 
+                                    console.log('✅ Requisição enviada (no-cors mode). Aguardando processamento...');
+                                    
                                     statusDiv.className = 'mt-3 text-sm text-emerald-600 font-medium';
                                     statusDiv.textContent = `✓ ${selectedImages.length} foto(s) enviada(s) com sucesso para qualidade@somengil.com!`;
                                     
-                                    // Aguardar o Apps Script processar e atualizar o Sheet (2 segundos)
-                                    await new Promise(resolve => setTimeout(resolve, 2000));
+                                    // Aguardar Apps Script processar (3 segundos para garantir)
+                                    await new Promise(resolve => setTimeout(resolve, 3000));
                                     
-                                    // Recarregar dados do Sheet para obter o valor "Sim" atualizado pelo Apps Script
+                                    // Recarregar dados do Sheet para verificar se foi atualizado
                                     if (window.appState && window.appState.serial) {
+                                        console.log('🔄 Recarregando dados do Sheet...');
                                         await window.loadSheetData(window.appState.serial);
-                                        calculateAndDisplayProgress(window.appState.data);
-                                        displayPhotoLog(window.appState.data.dataEnvioFotos);
+                                        
+                                        // Verificar se as fotos foram marcadas como enviadas
+                                        const fotosEnviadas = window.appState.data.fotosEnviadas;
+                                        const dataEnvio = window.appState.data.dataEnvioFotos;
+                                        
+                                        console.log('📊 Estado após reload:', {
+                                            fotosEnviadas,
+                                            dataEnvio,
+                                            temTimestamp: !!dataEnvio
+                                        });
+                                        
+                                        window.calculateAndDisplayProgress(window.appState.data);
+                                        window.displayPhotoLog(window.appState.data.dataEnvioFotos);
+                                        
+                                        // Mostrar aviso se não foi atualizado
+                                        if (fotosEnviadas !== 'Sim') {
+                                            console.warn('⚠️ AVISO: Campo "Fotos Enviadas" não foi atualizado para "Sim"');
+                                            statusDiv.textContent += ' (Verifique o Google Sheets manualmente)';
+                                        }
                                     }
                                     
                                     // Limpar seleção

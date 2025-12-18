@@ -355,6 +355,9 @@ function handleSendEmail(payload) {
                     
                     // Registrar timestamp do envio
                     const dataEnvioIndex = headers.indexOf("Data Envio Fotos");
+                    Logger.log(`🔍 Procurando coluna 'Data Envio Fotos'...`);
+                    Logger.log(`   Índice encontrado: ${dataEnvioIndex}`);
+                    
                     if (dataEnvioIndex !== -1) {
                         const timestampCell = sheet.getRange(2, dataEnvioIndex + 1);
                         const currentTimestamp = new Date().toLocaleString('pt-PT', { 
@@ -367,11 +370,21 @@ function handleSendEmail(payload) {
                             second: '2-digit'
                         });
                         
+                        Logger.log(`   Timestamp gerado: ${currentTimestamp}`);
+                        
                         // Obter timestamp existente e adicionar novo
                         const existingValue = timestampCell.getValue();
+                        Logger.log(`   Valor existente na célula: "${existingValue}" (tipo: ${typeof existingValue})`);
+                        
                         const newValue = existingValue ? `${existingValue}\n${currentTimestamp}` : currentTimestamp;
+                        Logger.log(`   Novo valor a gravar: "${newValue}"`);
+                        
                         timestampCell.setValue(newValue);
                         Logger.log(`✓ Timestamp registrado: ${currentTimestamp}`);
+                    } else {
+                        Logger.log(`✗ ERRO: Coluna 'Data Envio Fotos' NÃO ENCONTRADA!`);
+                        Logger.log(`   Total de colunas no sheet: ${headers.length}`);
+                        Logger.log(`   Última coluna: "${headers[headers.length - 1]}"`);
                     }
                     
                     SpreadsheetApp.flush(); // Força a escrita imediata
