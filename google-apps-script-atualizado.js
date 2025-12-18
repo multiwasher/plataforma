@@ -11,7 +11,7 @@ const COLUMN_HEADERS = [
     "Pode receber um camião TIR?", "Tem empilhador (2.5Ton)?", 
     "Capacidade descarregar sem Técnico Somengil?", "Tem técnico para auxiliar na instalação?", 
     "Pode armazenar equipamento?", "É necessário cintas?", "Tem água na sala?", 
-    "Tamanho adaptador água", "Tem energia eléctrica?", "Tem escadas?", 
+    "Tamanho adaptator de água", "Tem energia eléctrica?", "Tem escadas?", 
     "Tem ficha eléctrica?", "Opção dos Amperes", "Tem detergentes?", 
     "Documentação p/ entrar na Fábrica?", "Equipamento Proteção Obrigatório?", 
     "Chão acabado?", "Dreno preparado?", "Ventilação preparada?", 
@@ -41,7 +41,7 @@ const FORM_TO_SHEET_MAP = {
     "podeDescarregarSemTecnico": "Capacidade descarregar sem Técnico Somengil?", 
     "temTecnicoAuxiliar": "Tem técnico para auxiliar na instalação?", 
     "podeArmazenar": "Pode armazenar equipamento?", "necessarioCintas": "É necessário cintas?", 
-    "temAguaSala": "Tem água na sala?", "adaptadorAguaTamanho": "Tamanho adaptador água",
+    "temAguaSala": "Tem água na sala?", "adaptadorAguaTamanho": "Tamanho adaptator de água",
     "temEnergiaEletrica": "Tem energia eléctrica?", "temEscadas": "Tem escadas?", 
     "temFichaEletrica": "Tem ficha eléctrica?", "amperesOpcao": "Opção dos Amperes", 
     "temDetergentes": "Tem detergentes?", "documentacaoFabrica": "Documentação p/ entrar na Fábrica?", 
@@ -346,17 +346,24 @@ function handleSendEmail(payload) {
                 const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
                 const fotosEnviadasIndex = headers.indexOf("Fotos Enviadas");
                 
-                Logger.log(`Headers: ${JSON.stringify(headers)}`);
-                Logger.log(`Índice da coluna 'Fotos Enviadas': ${fotosEnviadasIndex}`);
+                Logger.log(`📋 === DIAGNÓSTICO DE HEADERS ===`);
+                Logger.log(`   Total de colunas no sheet: ${headers.length}`);
+                Logger.log(`   Primeiras 3 colunas: ${JSON.stringify(headers.slice(0, 3))}`);
+                Logger.log(`   Últimas 3 colunas: ${JSON.stringify(headers.slice(-3))}`);
+                Logger.log(`   Coluna 53: "${headers[52]}" (esperado: "Fotos Enviadas")`);
+                Logger.log(`   Coluna 54: "${headers[53]}" (esperado: "Data Envio Fotos")`);
+                Logger.log(`   Índice 'Fotos Enviadas': ${fotosEnviadasIndex}`);
                 
                 if (fotosEnviadasIndex !== -1) {
                     const targetCell = sheet.getRange(2, fotosEnviadasIndex + 1);
                     targetCell.setValue("Sim");
+                    Logger.log(`✓ Coluna 'Fotos Enviadas' atualizada para 'Sim'`);
                     
                     // Registrar timestamp do envio
                     const dataEnvioIndex = headers.indexOf("Data Envio Fotos");
                     Logger.log(`🔍 Procurando coluna 'Data Envio Fotos'...`);
-                    Logger.log(`   Índice encontrado: ${dataEnvioIndex}`);
+                    Logger.log(`   Busca exata por: "Data Envio Fotos"`);
+                    Logger.log(`   Índice encontrado: ${dataEnvioIndex} (coluna ${dataEnvioIndex + 1})`);
                     
                     if (dataEnvioIndex !== -1) {
                         const timestampCell = sheet.getRange(2, dataEnvioIndex + 1);
@@ -370,21 +377,26 @@ function handleSendEmail(payload) {
                             second: '2-digit'
                         });
                         
-                        Logger.log(`   Timestamp gerado: ${currentTimestamp}`);
+                        Logger.log(`   📅 Timestamp gerado: ${currentTimestamp}`);
                         
                         // Obter timestamp existente e adicionar novo
                         const existingValue = timestampCell.getValue();
-                        Logger.log(`   Valor existente na célula: "${existingValue}" (tipo: ${typeof existingValue})`);
+                        Logger.log(`   📝 Valor atual na célula: "${existingValue}" (tipo: ${typeof existingValue})`);
                         
                         const newValue = existingValue ? `${existingValue}\n${currentTimestamp}` : currentTimestamp;
-                        Logger.log(`   Novo valor a gravar: "${newValue}"`);
+                        Logger.log(`   💾 Novo valor a gravar: "${newValue}"`);
                         
                         timestampCell.setValue(newValue);
-                        Logger.log(`✓ Timestamp registrado: ${currentTimestamp}`);
+                        SpreadsheetApp.flush(); // Força escrita imediata
+                        
+                        // Verificar se gravou
+                        const verifyValue = timestampCell.getValue();
+                        Logger.log(`   ✅ Verificação pós-gravação: "${verifyValue}"`);
+                        Logger.log(`✓ Timestamp registrado com sucesso na coluna ${dataEnvioIndex + 1}`);
                     } else {
-                        Logger.log(`✗ ERRO: Coluna 'Data Envio Fotos' NÃO ENCONTRADA!`);
-                        Logger.log(`   Total de colunas no sheet: ${headers.length}`);
-                        Logger.log(`   Última coluna: "${headers[headers.length - 1]}"`);
+                        Logger.log(`❌ ERRO CRÍTICO: Coluna 'Data Envio Fotos' NÃO ENCONTRADA!`);
+                        Logger.log(`   Total de colunas: ${headers.length} (esperado: 54)`);
+                        Logger.log(`   Headers completos: ${JSON.stringify(headers)}`);
                     }
                     
                     SpreadsheetApp.flush(); // Força a escrita imediata

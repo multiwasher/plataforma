@@ -9,7 +9,7 @@ const state = {
 };
 
 // URL do Google Apps Script para sincronização (Escrita/Leitura)
-const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyl6bPBFbH9r4Hv5gKIpJinE9tjCrYDXzDsprO140zupsxfV6pnt7uRbpeg4vyaR-D2Gw/exec"; 
+const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyIRFqJAsVSzFjmUv8csZhbvbE5i_yGZQNnScNmhRj5f9QH__ZocZp7cBS2OPZ6SuT89A/exec"; 
 
 // NOVO: Valores padrão vazios para garantir que campos não preenchidos no Sheets fiquem em branco na App.
 const emptyDefaults = {
