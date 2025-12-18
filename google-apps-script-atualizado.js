@@ -21,7 +21,7 @@ const COLUMN_HEADERS = [
     "Ligações Pressão Água (2bar rec.)", "Marca Produtos Químicos", 
     "Medição Porta (Largura - cm)", "Medição Porta (Altura - cm)", "Medição Chão ao Teto (cm)", 
     "Horário Trabalho (Início)", "Horário Trabalho (Fim)", "Data Entrega Prevista", 
-    "Observações Gerais"
+    "Observações Gerais", "Fotos Enviadas"
 ];
 
 // Mapeamento dos campos do formulário (chaves camelCase) para os cabeçalhos do Sheets (Full Text)
@@ -58,7 +58,7 @@ const FORM_TO_SHEET_MAP = {
     "medicaoPortaLargura": "Medição Porta (Largura - cm)", "medicaoPortaAltura": "Medição Porta (Altura - cm)", 
     "medicaoChaoTecto": "Medição Chão ao Teto (cm)", 
     "horarioTrabalhoInicio": "Horário Trabalho (Início)", "horarioTrabalhoFim": "Horário Trabalho (Fim)", 
-    "dataEntregaPrevista": "Data Entrega Prevista", "observacoes": "Observações Gerais"
+    "dataEntregaPrevista": "Data Entrega Prevista", "observacoes": "Observações Gerais", "fotosEnviadas": "Fotos Enviadas"
 };
 
 // Mapeamento inverso para Leitura (Sheets Header -> HTML Key)
@@ -332,6 +332,37 @@ function handleSendEmail(payload) {
         });
 
         Logger.log(`Email enviado com sucesso para ${to} com ${images.length} anexo(s). Serial: ${serial}`);
+
+        // Atualizar a coluna "Fotos Enviadas" para "Sim" no Sheet
+        try {
+            const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+            const sheet = ss.getSheetByName(serial);
+            
+            Logger.log(`Tentando atualizar sheet: ${serial}`);
+            Logger.log(`Sheet encontrada: ${sheet ? 'Sim' : 'Não'}`);
+            
+            if (sheet && sheet.getLastRow() >= 2) {
+                const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+                const fotosEnviadasIndex = headers.indexOf("Fotos Enviadas");
+                
+                Logger.log(`Headers: ${JSON.stringify(headers)}`);
+                Logger.log(`Índice da coluna 'Fotos Enviadas': ${fotosEnviadasIndex}`);
+                
+                if (fotosEnviadasIndex !== -1) {
+                    const targetCell = sheet.getRange(2, fotosEnviadasIndex + 1);
+                    targetCell.setValue("Sim");
+                    SpreadsheetApp.flush(); // Força a escrita imediata
+                    Logger.log(`✓ Coluna 'Fotos Enviadas' (coluna ${fotosEnviadasIndex + 1}) atualizada para 'Sim' no sheet ${serial}`);
+                } else {
+                    Logger.log(`✗ ERRO: Coluna 'Fotos Enviadas' não encontrada nos headers!`);
+                }
+            } else {
+                Logger.log(`✗ ERRO: Sheet não encontrada ou vazia (lastRow: ${sheet ? sheet.getLastRow() : 'N/A'})`);
+            }
+        } catch (updateError) {
+            Logger.log("✗ ERRO ao atualizar coluna Fotos Enviadas: " + updateError.toString());
+            // Não falha a operação se houver erro na atualização
+        }
 
         return ContentService.createTextOutput(JSON.stringify({ 
             result: "success", 

@@ -9,7 +9,7 @@ const state = {
 };
 
 // URL do Google Apps Script para sincronização (Escrita/Leitura)
-const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzKRq_XkmPd6yzRTdPTTrfl5IgjqdedFL96M0eTy6D0CkEXs2hdPFfDvpfquqbpa-xY2A/exec"; 
+const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbx3Dr7ka0JCgeFaETXuyIzTlX7eSy8iXQFCSwQRysyEljcjSOyvxMhxbKAGqV7UHoy1EA/exec"; 
 
 // NOVO: Valores padrão vazios para garantir que campos não preenchidos no Sheets fiquem em branco na App.
 const emptyDefaults = {
@@ -34,6 +34,7 @@ const emptyDefaults = {
     medicaoChaoTecto: null, horarioTrabalhoInicio: "", horarioTrabalhoFim: "", dataEntregaPrevista: "", observacoes: "",
     // VII. FOTOS E FICHEIROS (NOVO CAMPO)
     linksFotosFicheiros: "",
+    fotosEnviadas: ""
 };
 
 // Default Data Structure (Usado apenas para iteração e definição de campos)
@@ -69,8 +70,9 @@ const sectionMap = {
     // VI. Info & Medições (9 campos)
     ligacoesPressaoAgua: 'section-6', marcaProdutosQuimicos: 'section-6', medicaoPortaLargura: 'section-6', medicaoPortaAltura: 'section-6', 
     medicaoChaoTecto: 'section-6', horarioTrabalhoInicio: 'section-6', horarioTrabalhoFim: 'section-6', dataEntregaPrevista: 'section-6', observacoes: 'section-6',
-    // VII. Fotos e Ficheiros (1 campo - NOVO)
-    linksFotosFicheiros: 'section-7'
+    // VII. Fotos e Ficheiros (2 campos - NOVO)
+    linksFotosFicheiros: 'section-7',
+    fotosEnviadas: 'section-7'
 };
 
 
