@@ -34,7 +34,8 @@ const emptyDefaults = {
     medicaoChaoTecto: null, horarioTrabalhoInicio: "", horarioTrabalhoFim: "", dataEntregaPrevista: "", observacoes: "",
     // VII. FOTOS E FICHEIROS (NOVO CAMPO)
     linksFotosFicheiros: "",
-    fotosEnviadas: ""
+    fotosEnviadas: "",
+    dataEnvioFotos: ""
 };
 
 // Default Data Structure (Usado apenas para iteração e definição de campos)
@@ -72,7 +73,8 @@ const sectionMap = {
     medicaoChaoTecto: 'section-6', horarioTrabalhoInicio: 'section-6', horarioTrabalhoFim: 'section-6', dataEntregaPrevista: 'section-6', observacoes: 'section-6',
     // VII. Fotos e Ficheiros (2 campos - NOVO)
     linksFotosFicheiros: 'section-7',
-    fotosEnviadas: 'section-7'
+    fotosEnviadas: 'section-7',
+    dataEnvioFotos: 'section-7'
 };
 
 

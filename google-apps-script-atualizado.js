@@ -21,7 +21,7 @@ const COLUMN_HEADERS = [
     "Ligações Pressão Água (2bar rec.)", "Marca Produtos Químicos", 
     "Medição Porta (Largura - cm)", "Medição Porta (Altura - cm)", "Medição Chão ao Teto (cm)", 
     "Horário Trabalho (Início)", "Horário Trabalho (Fim)", "Data Entrega Prevista", 
-    "Observações Gerais", "Fotos Enviadas"
+    "Observações Gerais", "Fotos Enviadas", "Data Envio Fotos"
 ];
 
 // Mapeamento dos campos do formulário (chaves camelCase) para os cabeçalhos do Sheets (Full Text)
@@ -58,7 +58,8 @@ const FORM_TO_SHEET_MAP = {
     "medicaoPortaLargura": "Medição Porta (Largura - cm)", "medicaoPortaAltura": "Medição Porta (Altura - cm)", 
     "medicaoChaoTecto": "Medição Chão ao Teto (cm)", 
     "horarioTrabalhoInicio": "Horário Trabalho (Início)", "horarioTrabalhoFim": "Horário Trabalho (Fim)", 
-    "dataEntregaPrevista": "Data Entrega Prevista", "observacoes": "Observações Gerais", "fotosEnviadas": "Fotos Enviadas"
+    "dataEntregaPrevista": "Data Entrega Prevista", "observacoes": "Observações Gerais", "fotosEnviadas": "Fotos Enviadas",
+    "dataEnvioFotos": "Data Envio Fotos"
 };
 
 // Mapeamento inverso para Leitura (Sheets Header -> HTML Key)
@@ -351,6 +352,28 @@ function handleSendEmail(payload) {
                 if (fotosEnviadasIndex !== -1) {
                     const targetCell = sheet.getRange(2, fotosEnviadasIndex + 1);
                     targetCell.setValue("Sim");
+                    
+                    // Registrar timestamp do envio
+                    const dataEnvioIndex = headers.indexOf("Data Envio Fotos");
+                    if (dataEnvioIndex !== -1) {
+                        const timestampCell = sheet.getRange(2, dataEnvioIndex + 1);
+                        const currentTimestamp = new Date().toLocaleString('pt-PT', { 
+                            timeZone: 'Europe/Lisbon',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                        
+                        // Obter timestamp existente e adicionar novo
+                        const existingValue = timestampCell.getValue();
+                        const newValue = existingValue ? `${existingValue}\n${currentTimestamp}` : currentTimestamp;
+                        timestampCell.setValue(newValue);
+                        Logger.log(`✓ Timestamp registrado: ${currentTimestamp}`);
+                    }
+                    
                     SpreadsheetApp.flush(); // Força a escrita imediata
                     Logger.log(`✓ Coluna 'Fotos Enviadas' (coluna ${fotosEnviadasIndex + 1}) atualizada para 'Sim' no sheet ${serial}`);
                 } else {

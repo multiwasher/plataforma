@@ -240,6 +240,7 @@
             // VII. FOTOS E FICHEIROS (NOVO CAMPO)
             linksFotosFicheiros: "",
             fotosEnviadas: "",
+            dataEnvioFotos: "",
         };
         
         // Default Data Structure (Usado apenas para iteração e definição de campos)
@@ -276,7 +277,8 @@
             ligacoesPressaoAgua: 'section-6', marcaProdutosQuimicos: 'section-6', medicaoPortaLargura: 'section-6', medicaoPortaAltura: 'section-6', 
             medicaoChaoTecto: 'section-6', horarioTrabalhoInicio: 'section-6', horarioTrabalhoFim: 'section-6', dataEntregaPrevista: 'section-6', observacoes: 'section-6',
             // VII. Fotos e Ficheiros (1 campo - NOVO: apenas fotosEnviadas conta para progresso)
-            fotosEnviadas: 'section-7'
+            fotosEnviadas: 'section-7',
+            dataEnvioFotos: 'section-7'
         };
 
 
@@ -560,6 +562,10 @@
                     state.data = { ...emptyDefaults, ...result.data };
                     populateForm(state.data);
                     calculateAndDisplayProgress(state.data);
+                    
+                    // Exibir log de envios se houver
+                    displayPhotoLog(state.data.dataEnvioFotos);
+                    
                     document.getElementById('save-status').innerText = "Dados carregados da Google Sheet.";
                     document.getElementById('save-status').classList.remove('text-red-500', 'text-yellow-500');
                     document.getElementById('save-status').classList.add('text-emerald-600');
@@ -638,6 +644,29 @@
                     btn.classList.add('btn-inactive');
                 }
             });
+        }
+
+        /**
+         * Exibe o log de envios de fotos na UI
+         * @param {string} dataEnvioFotos String com timestamps separados por \n
+         */
+        function displayPhotoLog(dataEnvioFotos) {
+            const logContainer = document.getElementById('log-envios-container');
+            const logContent = document.getElementById('log-envios-content');
+            
+            if (!dataEnvioFotos || dataEnvioFotos.trim() === '') {
+                logContainer.classList.add('hidden');
+                return;
+            }
+            
+            const timestamps = dataEnvioFotos.split('\n').filter(t => t.trim());
+            logContent.innerHTML = timestamps.map((ts, idx) => 
+                `<div class="flex items-center">
+                    <span class="text-emerald-600 mr-2">●</span>
+                    <span>Envio ${idx + 1}: ${ts}</span>
+                </div>`
+            ).join('');
+            logContainer.classList.remove('hidden');
         }
 
         // --- Visualization Logic (Progress) ---
@@ -1122,12 +1151,9 @@
                         <span id="pct-section-6" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
                     </button>
                     <!-- Section 7: Fotos e Ficheiros (NOVO) -->
-                    <button id="btn-section-7" onclick="switchTab('section-7')" class="nav-item sidebar-dark-inactive w-full text-left px-4 md:px-6 py-1.5 md:py-2 text-xs md:text-sm font-medium transition-colors flex items-center justify-between group">
-                        <div class="flex items-center">
-                            <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">VII</span>
-                            <span data-translate="VII. Fotos e Ficheiros">Fotos & Ficheiros</span>
-                        </div>
-                        <span id="pct-section-7" class="text-xs font-bold w-12 text-slate-500 text-right">0%</span>
+                    <button id="btn-section-7" onclick="switchTab('section-7')" class="nav-item sidebar-dark-inactive w-full text-left px-4 md:px-6 py-1.5 md:py-2 text-xs md:text-sm font-medium transition-colors flex items-center group">
+                        <span class="section-icon w-6 h-6 rounded-full bg-gray-700 text-slate-400 flex items-center justify-center text-xs mr-3">VII</span>
+                        <span data-translate="VII. Fotos e Ficheiros">Fotos & Ficheiros</span>
                     </button>
                 </nav>
                 
@@ -1700,6 +1726,18 @@
                             
                             <!-- Hidden field para rastrear se fotos foram enviadas -->
                             <input type="hidden" id="field-fotosEnviadas" name="fotosEnviadas" value="">
+                            <input type="hidden" id="field-dataEnvioFotos" name="dataEnvioFotos" value="">
+                            
+                            <!-- Log de envios (readonly) -->
+                            <div id="log-envios-container" class="hidden mb-4 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-lg">
+                                <div class="flex items-center mb-2">
+                                    <span class="text-lg mr-2">✅</span>
+                                    <h4 class="text-sm font-bold text-emerald-800">Histórico de Envios</h4>
+                                </div>
+                                <div id="log-envios-content" class="text-xs text-slate-700 space-y-1 font-mono">
+                                    <!-- Timestamps serão inseridos aqui -->
+                                </div>
+                            </div>
                             
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Adicionar Fotos</label>
@@ -1868,6 +1906,7 @@
                                     if (window.appState && window.appState.serial) {
                                         await loadSheetData(window.appState.serial);
                                         calculateAndDisplayProgress(window.appState.data);
+                                        displayPhotoLog(window.appState.data.dataEnvioFotos);
                                     }
                                     
                                     // Limpar seleção
