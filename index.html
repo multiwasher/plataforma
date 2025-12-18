@@ -545,6 +545,58 @@
             }
         };
 
+        // Nova função para botões de guardar nas secções com feedback visual
+        window.saveDataWithFeedback = async function(buttonElement) {
+            const originalHTML = buttonElement.innerHTML;
+            
+            // Mostrar loading
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = `
+                <svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="ml-2">${window.translate('A guardar...') || 'A guardar...'}</span>
+            `;
+            
+            try {
+                // Chama a função saveData existente
+                await window.saveData(false);
+                
+                // Mostrar sucesso
+                buttonElement.classList.remove('bg-somengil-blue');
+                buttonElement.classList.add('bg-emerald-600');
+                buttonElement.innerHTML = `
+                    <span class="text-lg">✓</span>
+                    <span class="ml-2">${window.translate('Guardado!') || 'Guardado!'}</span>
+                `;
+                
+                // Restaurar após 2 segundos
+                setTimeout(() => {
+                    buttonElement.classList.remove('bg-emerald-600');
+                    buttonElement.classList.add('bg-somengil-blue');
+                    buttonElement.innerHTML = originalHTML;
+                    buttonElement.disabled = false;
+                }, 2000);
+            } catch (error) {
+                // Mostrar erro
+                buttonElement.classList.remove('bg-somengil-blue');
+                buttonElement.classList.add('bg-red-600');
+                buttonElement.innerHTML = `
+                    <span class="text-lg">✗</span>
+                    <span class="ml-2">${window.translate('Erro!') || 'Erro!'}</span>
+                `;
+                
+                // Restaurar após 2 segundos
+                setTimeout(() => {
+                    buttonElement.classList.remove('bg-red-600');
+                    buttonElement.classList.add('bg-somengil-blue');
+                    buttonElement.innerHTML = originalHTML;
+                    buttonElement.disabled = false;
+                }, 2000);
+            }
+        };
+
         // NOVO: Carrega dados do Apps Script (Leitura)
         // Nova função para validar se serial existe (sem abrir checklist)
         async function validateSerialExists(serial) {
@@ -1294,7 +1346,7 @@
                             </div>
                             <!-- Botão Guardar no final da secção -->
                             <div class="mt-6 flex justify-end">
-                                <button onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
+                                <button onclick="saveDataWithFeedback(this)" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
                                     <span class="text-lg">💾</span>
                                     <span data-translate="Guardar Progresso">Guardar Alterações</span>
                                 </button>
@@ -1346,7 +1398,7 @@
                             </div>
                             <!-- Botão Guardar no final da secção -->
                             <div class="mt-6 flex justify-end">
-                                <button onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
+                                <button onclick="saveDataWithFeedback(this)" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
                                     <span class="text-lg">💾</span>
                                     <span data-translate="Guardar Progresso">Guardar Alterações</span>
                                 </button>
@@ -1413,7 +1465,7 @@
                             </div>
                             <!-- Botão Guardar no final da secção -->
                             <div class="mt-6 flex justify-end">
-                                <button onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
+                                <button onclick="saveDataWithFeedback(this)" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
                                     <span class="text-lg">💾</span>
                                     <span data-translate="Guardar Progresso">Guardar Alterações</span>
                                 </button>
@@ -1454,7 +1506,7 @@
                             </div>
                             <!-- Botão Guardar no final da secção -->
                             <div class="mt-6 flex justify-end">
-                                <button onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
+                                <button onclick="saveDataWithFeedback(this)" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
                                     <span class="text-lg">💾</span>
                                     <span data-translate="Guardar Progresso">Guardar Alterações</span>
                                 </button>
@@ -1752,7 +1804,7 @@
                             </div>
                             <!-- Botão Guardar no final da secção -->
                             <div class="mt-6 flex justify-end pr-4 md:pr-6 pb-4 md:pb-6">
-                                <button onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
+                                <button onclick="saveDataWithFeedback(this)" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
                                     <span class="text-lg">💾</span>
                                     <span data-translate="Guardar Progresso">Guardar Alterações</span>
                                 </button>
@@ -1814,7 +1866,7 @@
                             </div>
                             <!-- Botão Guardar no final da secção -->
                             <div class="mt-6 flex justify-end">
-                                <button onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
+                                <button onclick="saveDataWithFeedback(this)" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
                                     <span class="text-lg">💾</span>
                                     <span data-translate="Guardar Progresso">Guardar Alterações</span>
                                 </button>
@@ -2071,7 +2123,7 @@
                         </script>
                         <!-- Botão Guardar no final da secção -->
                         <div class="mt-6 flex justify-end pr-4 md:pr-6 pb-4 md:pb-6">
-                            <button onclick="saveData()" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
+                            <button onclick="saveDataWithFeedback(this)" class="bg-somengil-blue hover:bg-somengil-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm">
                                 <span class="text-lg">💾</span>
                                 <span data-translate="Guardar Progresso">Guardar Alterações</span>
                             </button>
