@@ -484,59 +484,11 @@
                 }
 
 
-                // 3. Atualizar UI
-                if (!isInitialCreation) {
-                    const statusEl = document.getElementById('save-status');
-                    btn.innerText = "Guardado!";
-                    btn.classList.remove('bg-somengil-blue');
-                    btn.classList.add('bg-emerald-600');
-                    
-                    let statusMessage = "✓ Salvo com sucesso";
-                    statusEl.classList.remove('hidden', 'text-red-500', 'text-yellow-500');
-                    statusEl.classList.add('text-emerald-600');
-                    
-                    if (!isSheetSyncSuccessful) {
-                        statusMessage = "⚠ Erro ao salvar";
-                        statusEl.classList.remove('text-emerald-600');
-                        statusEl.classList.add('text-red-500');
-                    }
-                    statusEl.innerText = statusMessage;
-
-                    setTimeout(() => {
-                        btn.innerText = originalText;
-                        btn.classList.remove('bg-emerald-600');
-                        btn.classList.add('bg-somengil-blue');
-                        btn.disabled = false;
-                        statusEl.classList.add('hidden');
-                    }, 2000);
-                } else {
-                    const statusEl = document.getElementById('save-status');
-                    statusEl.innerText = "✓ Equipamento criado";
-                    statusEl.classList.remove('hidden');
-                    setTimeout(() => statusEl.classList.add('hidden'), 3000);
-                }
-                
+                // 3. Atualizar progresso
                 window.calculateAndDisplayProgress(state.data); 
 
             } catch (error) {
                 console.error("Save error:", error);
-                const statusEl = document.getElementById('save-status');
-                if (!isInitialCreation) {
-                    btn.innerText = "Erro!";
-                    statusEl.innerText = "✗ Erro ao salvar";
-                    statusEl.classList.remove('hidden', 'text-emerald-600', 'text-yellow-500');
-                    statusEl.classList.add('text-red-500');
-                    setTimeout(() => { 
-                        btn.innerText = originalText; 
-                        btn.disabled = false;
-                        statusEl.classList.add('hidden');
-                    }, 2000);
-                } else {
-                    statusEl.innerText = "✗ Erro ao criar equipamento";
-                    statusEl.classList.remove('hidden');
-                    statusEl.classList.add('text-red-500');
-                    setTimeout(() => statusEl.classList.add('hidden'), 3000);
-                }
             }
         };
 
@@ -642,26 +594,16 @@
                     
                     // Exibir log de envios se houver
                     window.displayPhotoLog(state.data.dataEnvioFotos);
-                    
-                    document.getElementById('save-status').innerText = "Dados carregados da Google Sheet.";
-                    document.getElementById('save-status').classList.remove('text-red-500', 'text-yellow-500');
-                    document.getElementById('save-status').classList.add('text-emerald-600');
                 } else if (result.result === 'not_found') {
                     // Separador não encontrado: Começa com dados padrão (O Apps Script deve criar na 1ª gravação)
                     state.data = { ...emptyDefaults }; // Se não encontrou, começa VAZIO
                     populateForm(state.data);
                     window.calculateAndDisplayProgress(state.data);
-                    document.getElementById('save-status').innerText = "Folha não encontrada. Preparada para nova criação.";
-                    document.getElementById('save-status').classList.remove('text-red-500', 'text-emerald-600');
-                    document.getElementById('save-status').classList.add('text-yellow-500');
                 } else {
                      throw new Error(`Apps Script Error: ${result.message || 'Resposta inesperada'}`);
                 }
             } catch (error) {
                 console.error("Error loading data from Apps Script:", error);
-                document.getElementById('save-status').innerText = `Erro ao carregar dados: ${error.message}`;
-                document.getElementById('save-status').classList.remove('text-emerald-600', 'text-yellow-500');
-                document.getElementById('save-status').classList.add('text-red-500');
             } finally {
                 showLoading(false);
             }
