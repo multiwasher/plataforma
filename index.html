@@ -959,29 +959,36 @@
     <!-- Action Selection View (Substitui o login inicial) -->
     <div id="action-view" class="fixed inset-0 overflow-y-scroll bg-somengil-light">
         <div class="min-h-screen flex items-center justify-center p-4 md:p-8">
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-lg text-center my-8">
+            <div class="p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-lg text-center my-8" style="background: radial-gradient(circle at center, rgba(81, 184, 234, 1) 0%, rgba(0, 0, 0, 1) 100%);">
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-somengil-dark tracking-tight" data-translate="MULTI WASHER">MULTI WASHER</h1>
-                <p class="text-somengil-blue font-semibold uppercase text-xs tracking-widest mt-1" data-translate="Plataforma de Instalação">Plataforma de Instalação</p>
+                <img src="https://static.wixstatic.com/media/a6967f_0c98d57376be4290aba002d8ba028a92~mv2.webp" 
+                     alt="MULTI WASHER" 
+                     class="mx-auto h-16 md:h-20 w-auto mb-3"
+                     onerror="this.onerror=null; this.innerHTML='<h1 class=\'text-3xl font-bold text-white\'>MULTI WASHER</h1>'">
+                <div class="inline-block p-0.5 rounded-lg mt-1" style="background: linear-gradient(90deg, rgba(81, 184, 234, 1) 0%, rgba(27, 71, 148, 1) 100%);">
+                    <div class="px-3 py-1.5 rounded-md bg-black">
+                        <p class="text-white font-semibold uppercase text-xs tracking-widest" data-translate="Plataforma de Instalação">Plataforma de Instalação</p>
+                    </div>
+                </div>
             </div>
             
             <!-- Seletor de Idioma -->
-            <div class="mb-6 pb-6 border-b border-gray-200">
-                <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="Selecione o idioma">Selecione o idioma</label>
-                <div class="flex justify-center gap-2">
+            <div class="mb-6 pb-6 border-b border-gray-700">
+                <label class="block text-sm font-medium text-gray-300 mb-2" data-translate="Selecione o idioma">Selecione o idioma</label>
+                <div class="flex justify-center gap-1.5 md:gap-2">
                     <button onclick="setLanguage('pt')" 
-                        class="language-btn px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-2"
+                        class="language-btn px-2 md:px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-1.5 md:gap-2 text-sm md:text-base"
                         data-lang="pt">
-                        <svg width="24" height="24" viewBox="0 0 24 24" style="border-radius: 2px; overflow: hidden;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" class="md:w-6 md:h-6" style="border-radius: 2px; overflow: hidden;">
                             <rect width="10" height="24" fill="#006600"/>
                             <rect x="10" width="14" height="24" fill="#FF0000"/>
                         </svg>
                         PT
                     </button>
                     <button onclick="setLanguage('en')" 
-                        class="language-btn px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-2"
+                        class="language-btn px-2 md:px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-1.5 md:gap-2 text-sm md:text-base"
                         data-lang="en">
-                        <svg width="24" height="24" viewBox="0 0 24 24" style="border-radius: 2px; overflow: hidden;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" class="md:w-6 md:h-6" style="border-radius: 2px; overflow: hidden;">
                             <rect width="24" height="24" fill="#012169"/>
                             <path d="M0,0 L24,24 M24,0 L0,24" stroke="white" stroke-width="3"/>
                             <path d="M0,0 L24,24 M24,0 L0,24" stroke="#C8102E" stroke-width="2"/>
@@ -991,9 +998,9 @@
                         EN
                     </button>
                     <button onclick="setLanguage('es')" 
-                        class="language-btn px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-2"
+                        class="language-btn px-2 md:px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-1.5 md:gap-2 text-sm md:text-base"
                         data-lang="es">
-                        <svg width="24" height="24" viewBox="0 0 24 24" style="border-radius: 2px; overflow: hidden;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" class="md:w-6 md:h-6" style="border-radius: 2px; overflow: hidden;">
                             <rect width="24" height="6" fill="#AA151B"/>
                             <rect y="6" width="24" height="12" fill="#F1BF00"/>
                             <rect y="18" width="24" height="6" fill="#AA151B"/>
@@ -1001,9 +1008,9 @@
                         ES
                     </button>
                     <button onclick="setLanguage('fr')" 
-                        class="language-btn px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-2"
+                        class="language-btn px-2 md:px-4 py-2 rounded-lg font-semibold transition duration-200 border-2 flex items-center gap-1.5 md:gap-2 text-sm md:text-base"
                         data-lang="fr">
-                        <svg width="24" height="24" viewBox="0 0 24 24" style="border-radius: 2px; overflow: hidden;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" class="md:w-6 md:h-6" style="border-radius: 2px; overflow: hidden;">
                             <rect width="8" height="24" fill="#002395"/>
                             <rect x="8" width="8" height="24" fill="#FFFFFF"/>
                             <rect x="16" width="8" height="24" fill="#ED2939"/>
@@ -1014,9 +1021,9 @@
             </div>
             
             <!-- 1. ACESSO EXISTENTE -->
-            <div class="p-6 border border-gray-200 rounded-xl mb-6 bg-gray-50">
-                 <h2 class="text-xl font-semibold text-somengil-dark mb-4" data-translate="Aceder Equipamento Existente">1. Aceder Equipamento Existente</h2>
-                 <p class="text-slate-500 mb-4 text-sm" data-translate="Insira o número de série para continuar a editar uma checklist.">Insira o número de série para continuar a editar uma checklist.</p>
+            <div class="p-6 border border-gray-700 rounded-xl mb-6 bg-gray-900">
+                 <h2 class="text-xl font-semibold text-white mb-4" data-translate="Aceder Equipamento Existente">1. Aceder Equipamento Existente</h2>
+                 <p class="text-gray-400 mb-4 text-sm" data-translate="Insira o número de série para continuar a editar uma checklist.">Insira o número de série para continuar a editar uma checklist.</p>
                 <form onsubmit="accessExistingEquipment(event)" class="space-y-4">
                     <div>
                         <input type="text" id="accessSerialInput" data-translate-placeholder="Número de Série Ex:" placeholder="Número de Série Ex: 123" required
@@ -1035,9 +1042,9 @@
             </div>
 
             <!-- 2. CRIAR NOVO -->
-            <div class="p-6 border border-gray-200 rounded-xl bg-blue-50/50">
-                 <h2 class="text-xl font-semibold text-somengil-dark mb-4" data-translate="Criar Novo Equipamento">2. Criar Novo Equipamento</h2>
-                 <p class="text-slate-600 mb-4 text-sm" data-translate="Inicie uma nova checklist e crie um novo separador na Google Sheet.">Inicie uma nova checklist e crie um novo separador na Google Sheet.</p>
+            <div class="p-6 border border-gray-700 rounded-xl bg-gray-900">
+                 <h2 class="text-xl font-semibold text-white mb-4" data-translate="Criar Novo Equipamento">2. Criar Novo Equipamento</h2>
+                 <p class="text-gray-400 mb-4 text-sm" data-translate="Inicie uma nova checklist e crie um novo separador na Google Sheet.">Inicie uma nova checklist e crie um novo separador na Google Sheet.</p>
                 <button onclick="showCreationView()"
                     class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-emerald-600/30"
                     data-translate="Iniciar Nova Checklist">
@@ -1045,7 +1052,7 @@
                 </button>
             </div>
             
-            <div class="mt-8 pt-6 border-t border-slate-100 text-xs text-slate-400">
+            <div class="mt-8 pt-6 border-t border-gray-700 text-xs text-gray-500">
                 &copy; Somengil 2025.
             </div>
             </div>
