@@ -77,6 +77,12 @@ const translationsData = {
     },
     "Número de Série Ex:": { pt: "Número de Série Ex:", en: "Serial Number e.g.:", es: "Número de Serie ej.:", fr: "Numéro de Série ex:" },
     "Aceder e Editar": { pt: "Aceder e Editar", en: "Access and Edit", es: "Acceder y Editar", fr: "Accéder et Modifier" },
+    "Serial não encontrado": { 
+        pt: "Equipamento não encontrado. Crie um novo equipamento ou verifique o número de série.", 
+        en: "Equipment not found. Create a new equipment or verify the serial number.", 
+        es: "Equipo no encontrado. Cree un nuevo equipo o verifique el número de serie.", 
+        fr: "Équipement introuvable. Créez un nouvel équipement ou vérifiez le numéro de série." 
+    },
     "Criar Novo Equipamento": { pt: "Criar Novo Equipamento", en: "Create New Equipment", es: "Crear Nuevo Equipo", fr: "Créer Nouvel Équipement" },
     "Inicie uma nova checklist e crie um novo separador na Google Sheet.": { 
         pt: "Inicie uma nova checklist e crie um novo separador na Google Sheet.", 
