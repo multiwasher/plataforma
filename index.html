@@ -92,6 +92,9 @@
             border: 2px solid #9ca3af; /* Gray-400 */
             transition: all 0.2s;
             cursor: pointer;
+            display: inline-block;
+            position: relative;
+            flex-shrink: 0;
         }
         .form-radio:checked {
             border-color: transparent;
@@ -1055,12 +1058,6 @@
                     <!-- Loader -->
                     <div id="loader" class="hidden absolute inset-0 bg-white/80 z-50 flex items-center justify-center backdrop-blur-sm">
                         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-somengil-blue"></div>
-                    </div>
-
-                    <!-- Header -->
-                    <div class="mb-6 md:mb-8">
-                        <h1 class="text-xl md:text-2xl font-bold text-somengil-dark">Formulário de Verificação Editável</h1>
-                        <p class="text-sm md:text-base text-slate-500">Preencha e edite os dados. O progresso de preenchimento é visível na barra lateral.</p>
                     </div>
 
                     <!-- SECTION 1: TÉCNICO -->
