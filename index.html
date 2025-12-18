@@ -1044,7 +1044,7 @@
             
             <!-- Mobile Menu Button -->
             <button id="mobile-menu-btn" onclick="toggleMobileSidebar()" 
-                class="hidden fixed top-4 left-4 z-30 bg-somengil-blue text-white p-3 rounded-lg shadow-lg hover:bg-somengil-accent transition">
+                class="hidden fixed top-4 right-4 z-30 bg-somengil-blue text-white p-3 rounded-lg shadow-lg hover:bg-somengil-accent transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
@@ -1200,25 +1200,25 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="Estado de Entrega">Estado de entrega</label>
                                     <div class="flex flex-col sm:flex-row gap-4">
-                                        <label class="flex items-center space-x-2"><input type="radio" name="condicaoMontagem" value="Assemblada" class="form-radio"> <span data-translate="Assemblada">Assemblada</span></label>
-                                        <label class="flex items-center space-x-2"><input type="radio" name="condicaoMontagem" value="Parcialmente desmontada" class="form-radio"> <span data-translate="Parcialmente desmontada">Parcialmente desmontada</span></label>
-                                        <label class="flex items-center space-x-2"><input type="radio" name="condicaoMontagem" value="Desmontada" class="form-radio"> <span data-translate="Desmontada">Desmontada</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="condicaoMontagem" value="Assemblada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Assemblada">Assemblada</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="condicaoMontagem" value="Parcialmente desmontada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Parcialmente desmontada">Parcialmente desmontada</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="condicaoMontagem" value="Desmontada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Desmontada">Desmontada</span></label>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="Tipo de Instalação">Tipo de Instalação</label>
                                     <div class="flex gap-4">
-                                        <label class="flex items-center space-x-2"><input type="radio" name="instalacaoTipo" value="Enterrada" class="form-radio"> <span data-translate="Enterrada">Enterrada</span></label>
-                                        <label class="flex items-center space-x-2"><input type="radio" name="instalacaoTipo" value="Sola" class="form-radio"> <span data-translate="Solo">Solo</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="instalacaoTipo" value="Enterrada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Enterrada">Enterrada</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="instalacaoTipo" value="Sola" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Solo">Solo</span></label>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="Responsabilidade Gradil">Responsabilidade Gradil</label>
                                     <div class="flex gap-4">
-                                        <label class="flex items-center space-x-2"><input type="radio" name="responsabilidadeGradil" value="Somengil" class="form-radio"> <span data-translate="Somengil">Somengil</span></label>
-                                        <label class="flex items-center space-x-2"><input type="radio" name="responsabilidadeGradil" value="Cliente" class="form-radio"> <span data-translate="Cliente">Cliente</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="responsabilidadeGradil" value="Somengil" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Somengil">Somengil</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="responsabilidadeGradil" value="Cliente" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Cliente">Cliente</span></label>
                                     </div>
                                 </div>
                             </div>
@@ -1284,9 +1284,9 @@
                                 <div class="p-4 border-b border-gray-50 flex items-center justify-between bg-blue-50/50" onchange="saveData()">
                                     <span class="text-sm text-gray-700 font-medium" data-translate="Opção dos Amperes">Opção dos Amperes</span>
                                     <div class="flex space-x-3 text-xs">
-                                        <label><input type="radio" name="amperesOpcao" value="16A SP" class="form-radio"> 16A SP</label>
-                                        <label><input type="radio" name="amperesOpcao" value="32A 5P" class="form-radio"> 32A 5P</label>
-                                        <label><input type="radio" name="amperesOpcao" value="63A SP" class="form-radio"> 63A SP</label>
+                                        <label class="inline-flex items-center cursor-pointer"><input type="radio" name="amperesOpcao" value="16A SP" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span class="ml-1">16A SP</span></label>
+                                        <label class="inline-flex items-center cursor-pointer"><input type="radio" name="amperesOpcao" value="32A 5P" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span class="ml-1">32A 5P</span></label>
+                                        <label class="inline-flex items-center cursor-pointer"><input type="radio" name="amperesOpcao" value="63A SP" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span class="ml-1">63A SP</span></label>
                                     </div>
                                 </div>
 
@@ -1308,8 +1308,8 @@
                                     <div class="flex justify-between items-center mb-2" onchange="saveData()">
                                         <span class="text-sm text-gray-700" data-translate="Operador presente?">Operador presente na formação?</span>
                                         <div class="flex space-x-2">
-                                            <label><input type="radio" name="operadorPresente" value="Sim" class="form-radio"> <span data-translate="Sim">Sim</span></label>
-                                            <label><input type="radio" name="operadorPresente" value="Não" class="form-radio"> <span data-translate="Não">Não</span></label>
+                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="operadorPresente" value="Sim" class="form-radio text-emerald-600 focus:ring-emerald-500"> <span class="ml-1" data-translate="Sim">Sim</span></label>
+                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="operadorPresente" value="Não" class="form-radio text-red-500 focus:ring-red-500"> <span class="ml-1" data-translate="Não">Não</span></label>
                                         </div>
                                     </div>
                                     <input type="text" id="field-operadorNome" class="w-full text-sm p-2 bg-gray-50 rounded border border-gray-200" data-translate-placeholder="Nome do Operador" placeholder="Nome do Operador..." oninput="saveData()">
@@ -1318,8 +1318,8 @@
                                     <div class="flex justify-between items-center mb-2" onchange="saveData()">
                                         <span class="text-sm text-gray-700" data-translate="Resp. Comission.">Responsável Comissionamento presente?</span>
                                         <div class="flex space-x-2">
-                                            <label><input type="radio" name="responsavelComissionamentoPresente" value="Sim" class="form-radio"> <span data-translate="Sim">Sim</span></label>
-                                            <label><input type="radio" name="responsavelComissionamentoPresente" value="Não" class="form-radio"> <span data-translate="Não">Não</span></label>
+                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="responsavelComissionamentoPresente" value="Sim" class="form-radio text-emerald-600 focus:ring-emerald-500"> <span class="ml-1" data-translate="Sim">Sim</span></label>
+                                            <label class="inline-flex items-center cursor-pointer"><input type="radio" name="responsavelComissionamentoPresente" value="Não" class="form-radio text-red-500 focus:ring-red-500"> <span class="ml-1" data-translate="Não">Não</span></label>
                                         </div>
                                     </div>
                                     <input type="text" id="field-responsavelComissionamentoNome" class="w-full text-sm p-2 bg-gray-50 rounded border border-gray-200" placeholder="Nome do Responsável..." oninput="saveData()">
