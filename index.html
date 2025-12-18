@@ -407,15 +407,8 @@
         };
 
         // NOVO: Adaptação da função saveData para ser usada na criação e gravação normal
-        window.saveData = async (isInitialCreation = false) => {
+        window.saveData = async (isInitialCreation = false, propagateError = false) => {
             if (!state.serial) return;
-            const btn = document.getElementById('save-btn');
-            const originalText = isInitialCreation ? "A criar..." : btn.innerText;
-            
-            if (!isInitialCreation) {
-                btn.innerText = "A guardar...";
-                btn.disabled = true;
-            }
 
             let newData = {};
             let isSheetSyncSuccessful = true;
@@ -489,6 +482,9 @@
 
             } catch (error) {
                 console.error("Save error:", error);
+                if (propagateError) {
+                    throw error; // Apenas propaga quando explicitamente solicitado
+                }
             }
         };
 
@@ -508,7 +504,7 @@
             
             try {
                 // Chama a função saveData existente
-                await window.saveData(false);
+                await window.saveData(false, true);
                 
                 // Mostrar sucesso
                 buttonElement.classList.remove('bg-somengil-blue');
@@ -1075,9 +1071,11 @@
                          <div class="mb-4">
                             <label class="block text-sm font-medium mb-1" data-translate="Modelo">Modelo</label>
                             <div class="flex flex-wrap gap-2" onchange="createNewEquipment.latestData = true">
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 200" class="form-radio"> <span>MWS 200</span></label>
                                 <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 300" class="form-radio"> <span>MWS 300</span></label>
                                 <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 500" class="form-radio"> <span>MWS 500</span></label>
                                 <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 700" class="form-radio"> <span>MWS 700</span></label>
+                                <label class="flex items-center space-x-1"><input type="radio" name="creation-equipamentoModelo" value="MWS 715" class="form-radio"> <span>MWS 715</span></label>
                             </div>
                         </div>
                         <div class="mb-4">
@@ -1403,6 +1401,10 @@
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Modelo</label>
                                 <div class="flex flex-wrap gap-4">
                                     <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
+                                        <input type="radio" name="equipamentoModelo" value="MWS 200" class="form-radio">
+                                        <span>MWS 200</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
                                         <input type="radio" name="equipamentoModelo" value="MWS 300" class="form-radio">
                                         <span>MWS 300</span>
                                     </label>
@@ -1413,6 +1415,10 @@
                                     <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
                                         <input type="radio" name="equipamentoModelo" value="MWS 700" class="form-radio">
                                         <span>MWS 700</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
+                                        <input type="radio" name="equipamentoModelo" value="MWS 715" class="form-radio">
+                                        <span>MWS 715</span>
                                     </label>
                                 </div>
                             </div>
