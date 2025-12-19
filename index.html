@@ -635,8 +635,8 @@
                 const hiddenInput = document.querySelector(`input[type="hidden"][name="${key}"]`);
                 if (hiddenInput && val) {
                     hiddenInput.value = val;
-                    // Activate the corresponding button
-                    const buttons = document.querySelectorAll(`button[data-name="${key}"]`);
+                    // Activate the corresponding button (for Logística, Montagem and Equipamento)
+                    const buttons = document.querySelectorAll(`button[data-field="${key}"]`);
                     buttons.forEach(btn => {
                         btn.classList.remove('btn-active-yes', 'btn-active-no', 'btn-inactive');
                         if (btn.getAttribute('data-value') === val) {
@@ -644,6 +644,9 @@
                                 btn.classList.add('btn-active-yes');
                             } else if (val === 'Não') {
                                 btn.classList.add('btn-active-no');
+                            } else {
+                                // Para Montagem, Equipamento e outros valores
+                                btn.classList.add('btn-active-yes');
                             }
                         } else {
                             btn.classList.add('btn-inactive');
@@ -1397,65 +1400,105 @@
                             <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100">III. Equipamento</h3>
                             
                             <!-- Modelo -->
-                            <div class="mb-6" onchange="saveData()">
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Modelo</label>
-                                <div class="flex flex-wrap gap-4">
-                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
-                                        <input type="radio" name="equipamentoModelo" value="MWS 200" class="form-radio">
-                                        <span>MWS 200</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
-                                        <input type="radio" name="equipamentoModelo" value="MWS 300" class="form-radio">
-                                        <span>MWS 300</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
-                                        <input type="radio" name="equipamentoModelo" value="MWS 500" class="form-radio">
-                                        <span>MWS 500</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
-                                        <input type="radio" name="equipamentoModelo" value="MWS 700" class="form-radio">
-                                        <span>MWS 700</span>
-                                    </label>
-                                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-50 p-3 rounded hover:bg-gray-100 border border-transparent hover:border-somengil-blue/30">
-                                        <input type="radio" name="equipamentoModelo" value="MWS 715" class="form-radio">
-                                        <span>MWS 715</span>
-                                    </label>
+                            <div class="mb-6">
+                                <label class="block text-sm font-bold text-gray-700 mb-3">Modelo</label>
+                                <input type="hidden" name="equipamentoModelo" value="">
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoModelo', 'MWS 200')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoModelo" data-value="MWS 200">MWS 200</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoModelo', 'MWS 300')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoModelo" data-value="MWS 300">MWS 300</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoModelo', 'MWS 500')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoModelo" data-value="MWS 500">MWS 500</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoModelo', 'MWS 700')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoModelo" data-value="MWS 700">MWS 700</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoModelo', 'MWS 715')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoModelo" data-value="MWS 715">MWS 715</button>
                                 </div>
                             </div>
 
                             <!-- Voltagem -->
-                            <div class="mb-6" onchange="saveData()">
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Voltagem</label>
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="208V" class="form-radio"> <span>208V</span></label>
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="220V" class="form-radio"> <span>220V</span></label>
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="230V" class="form-radio"> <span>230V</span></label>
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="380V" class="form-radio"> <span>380V</span></label>
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="400V" class="form-radio"> <span>400V</span></label>
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="440V" class="form-radio"> <span>440V</span></label>
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="480V" class="form-radio"> <span>480V</span></label>
-                                    <label class="flex items-center space-x-2"><input type="radio" name="equipamentoVoltagem" value="575V" class="form-radio"> <span>575V</span></label>
+                            <div class="mb-6">
+                                <label class="block text-sm font-bold text-gray-700 mb-3">Voltagem</label>
+                                <input type="hidden" name="equipamentoVoltagem" value="">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '208V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="208V">208V</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '220V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="220V">220V</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '230V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="230V">230V</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '380V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="380V">380V</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '400V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="400V">400V</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '440V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="440V">440V</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '480V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="480V">480V</button>
+                                    <button type="button" onclick="selectEquipamento(this, 'equipamentoVoltagem', '575V')" class="btn-equipamento px-3 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoVoltagem" data-value="575V">575V</button>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" onchange="saveData()">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Frequencia -->
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Frequência</label>
-                                    <div class="flex gap-4">
-                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoFrequencia" value="50Hz" class="form-radio"> <span>50Hz</span></label>
-                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoFrequencia" value="60Hz" class="form-radio"> <span>60Hz</span></label>
+                                    <label class="block text-sm font-bold text-gray-700 mb-3">Frequência</label>
+                                    <input type="hidden" name="equipamentoFrequencia" value="">
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="selectEquipamento(this, 'equipamentoFrequencia', '50Hz')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoFrequencia" data-value="50Hz">50Hz</button>
+                                        <button type="button" onclick="selectEquipamento(this, 'equipamentoFrequencia', '60Hz')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoFrequencia" data-value="60Hz">60Hz</button>
                                     </div>
                                 </div>
                                 <!-- Aquecimento -->
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Aquecimento</label>
-                                    <div class="flex gap-4">
-                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoAquecimento" value="Electrico" class="form-radio"> <span>Elétrico</span></label>
-                                        <label class="flex items-center space-x-2"><input type="radio" name="equipamentoAquecimento" value="Vapor" class="form-radio"> <span>Vapor</span></label>
+                                    <label class="block text-sm font-bold text-gray-700 mb-3">Aquecimento</label>
+                                    <input type="hidden" name="equipamentoAquecimento" value="">
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="selectEquipamento(this, 'equipamentoAquecimento', 'Electrico')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoAquecimento" data-value="Electrico">Elétrico</button>
+                                        <button type="button" onclick="selectEquipamento(this, 'equipamentoAquecimento', 'Vapor')" class="btn-equipamento px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="equipamentoAquecimento" data-value="Vapor">Vapor</button>
                                     </div>
                                 </div>
                             </div>
+
+                            <script>
+                                function selectEquipamento(btn, fieldName, value) {
+                                    // Find the hidden input for this field
+                                    const hiddenInput = btn.parentElement.parentElement.querySelector(`input[name="${fieldName}"]`) || 
+                                                      btn.parentElement.querySelector(`input[name="${fieldName}"]`);
+                                    
+                                    // Remove active class from all buttons in this group
+                                    const allBtns = btn.parentElement.querySelectorAll('.btn-equipamento');
+                                    allBtns.forEach(b => {
+                                        b.classList.remove('btn-active-yes', 'btn-active-no');
+                                        b.classList.add('btn-inactive');
+                                    });
+                                    
+                                    // Add active class to clicked button
+                                    btn.classList.remove('btn-inactive');
+                                    btn.classList.add('btn-active-yes');
+                                    
+                                    // Update hidden input
+                                    if (hiddenInput) {
+                                        hiddenInput.value = value;
+                                    }
+                                    
+                                    // Save data
+                                    saveData();
+                                }
+
+                                // CSS for equipamento buttons
+                                const styleEquip = document.createElement('style');
+                                styleEquip.textContent = `
+                                    .btn-equipamento {
+                                        min-width: 80px;
+                                    }
+                                    .btn-equipamento.btn-inactive {
+                                        background-color: #f3f4f6;
+                                        border-color: #d1d5db;
+                                        color: #6b7280;
+                                    }
+                                    .btn-equipamento.btn-inactive:hover {
+                                        background-color: #e5e7eb;
+                                        border-color: #9ca3af;
+                                    }
+                                    .btn-equipamento.btn-active-yes {
+                                        background-color: #10b981;
+                                        border-color: #059669;
+                                        color: white;
+                                        font-weight: 600;
+                                    }
+                                `;
+                                document.head.appendChild(styleEquip);
+                            </script>
                             <!-- Botões de navegação e guardar -->
                             <div class="mt-6 flex justify-between items-center">
                                 <div class="flex gap-2">
@@ -1477,34 +1520,104 @@
                     <!-- SECTION 4: MONTAGEM -->
                     <div id="section-4" class="content-section hidden">
                         <div style="background-color: #dfe4e4;" class="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
-                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100" data-translate="IV. Montagem">IV. Condição de Montagem</h3>
+                            <h3 class="text-base md:text-lg font-semibold text-somengil-blue mb-3 md:mb-4 pb-2 border-b border-gray-100">IV. Equipamento</h3>
                             
-                            <div class="space-y-6" onchange="saveData()">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="Estado de Entrega">Estado de entrega</label>
-                                    <div class="flex flex-col sm:flex-row gap-4">
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="condicaoMontagem" value="Assemblada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Assemblada">Assemblada</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="condicaoMontagem" value="Parcialmente desmontada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Parcialmente desmontada">Parcialmente desmontada</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="condicaoMontagem" value="Desmontada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Desmontada">Desmontada</span></label>
+                            <div class="space-y-4">
+                                <!-- Estado de Entrega -->
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <label class="block text-sm font-bold text-gray-700 mb-3" data-translate="Estado de Entrega">Estado de entrega</label>
+                                    <input type="hidden" name="condicaoMontagem" value="">
+                                    <div class="flex flex-wrap gap-2">
+                                        <button type="button" onclick="selectMontagem(this, 'condicaoMontagem', 'Assemblada')" class="btn-montagem px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="condicaoMontagem" data-value="Assemblada">
+                                            <span data-translate="Assemblada">Assemblada</span>
+                                        </button>
+                                        <button type="button" onclick="selectMontagem(this, 'condicaoMontagem', 'Parcialmente desmontada')" class="btn-montagem px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="condicaoMontagem" data-value="Parcialmente desmontada">
+                                            <span data-translate="Parcialmente desmontada">Parcialmente desmontada</span>
+                                        </button>
+                                        <button type="button" onclick="selectMontagem(this, 'condicaoMontagem', 'Desmontada')" class="btn-montagem px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="condicaoMontagem" data-value="Desmontada">
+                                            <span data-translate="Desmontada">Desmontada</span>
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="Tipo de Instalação">Tipo de Instalação</label>
-                                    <div class="flex gap-4">
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="instalacaoTipo" value="Enterrada" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Enterrada">Enterrada</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="instalacaoTipo" value="Sola" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Solo">Solo</span></label>
+                                <!-- Tipo de Instalação -->
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <label class="block text-sm font-bold text-gray-700 mb-3" data-translate="Tipo de Instalação">Tipo de Instalação</label>
+                                    <input type="hidden" name="instalacaoTipo" value="">
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="selectMontagem(this, 'instalacaoTipo', 'Enterrada')" class="btn-montagem px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="instalacaoTipo" data-value="Enterrada">
+                                            <span data-translate="Enterrada">Enterrada</span>
+                                        </button>
+                                        <button type="button" onclick="selectMontagem(this, 'instalacaoTipo', 'Solo')" class="btn-montagem px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="instalacaoTipo" data-value="Solo">
+                                            <span data-translate="Solo">Solo</span>
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="Responsabilidade Gradil">Responsabilidade Gradil</label>
-                                    <div class="flex gap-4">
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="responsabilidadeGradil" value="Cliente" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="Cliente">Cliente</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="responsabilidadeGradil" value="SOMENGIL" class="form-radio text-somengil-blue focus:ring-somengil-blue"> <span data-translate="SOMENGIL">SOMENGIL</span></label>
+                                <!-- Responsabilidade Gradil -->
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <label class="block text-sm font-bold text-gray-700 mb-3" data-translate="Responsabilidade Gradil">Responsabilidade Gradil</label>
+                                    <input type="hidden" name="responsabilidadeGradil" value="">
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="selectMontagem(this, 'responsabilidadeGradil', 'Cliente')" class="btn-montagem px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="responsabilidadeGradil" data-value="Cliente">
+                                            <span data-translate="Cliente">Cliente</span>
+                                        </button>
+                                        <button type="button" onclick="selectMontagem(this, 'responsabilidadeGradil', 'SOMENGIL')" class="btn-montagem px-4 py-2 rounded-lg font-medium text-sm transition-all border-2" data-field="responsabilidadeGradil" data-value="SOMENGIL">
+                                            <span data-translate="SOMENGIL">SOMENGIL</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
+
+                            <script>
+                                function selectMontagem(btn, fieldName, value) {
+                                    // Find the hidden input for this field
+                                    const hiddenInput = btn.parentElement.parentElement.querySelector(`input[name="${fieldName}"]`);
+                                    
+                                    // Remove active class from all buttons in this group
+                                    const allBtns = btn.parentElement.querySelectorAll('.btn-montagem');
+                                    allBtns.forEach(b => {
+                                        b.classList.remove('btn-active-yes', 'btn-active-no');
+                                        b.classList.add('btn-inactive');
+                                    });
+                                    
+                                    // Add active class to clicked button
+                                    btn.classList.remove('btn-inactive');
+                                    btn.classList.add('btn-active-yes');
+                                    
+                                    // Update hidden input
+                                    if (hiddenInput) {
+                                        hiddenInput.value = value;
+                                    }
+                                    
+                                    // Save data
+                                    saveData();
+                                }
+
+                                // CSS for montagem buttons
+                                const style = document.createElement('style');
+                                style.textContent = `
+                                    .btn-montagem {
+                                        min-width: 120px;
+                                    }
+                                    .btn-inactive {
+                                        background-color: #f3f4f6;
+                                        border-color: #d1d5db;
+                                        color: #6b7280;
+                                    }
+                                    .btn-inactive:hover {
+                                        background-color: #e5e7eb;
+                                        border-color: #9ca3af;
+                                    }
+                                    .btn-active-yes {
+                                        background-color: #10b981;
+                                        border-color: #059669;
+                                        color: white;
+                                        font-weight: 600;
+                                    }
+                                `;
+                                document.head.appendChild(style);
+                            </script>
                             <!-- Botões de navegação e guardar -->
                             <div class="mt-6 flex justify-between items-center">
                                 <div class="flex gap-2">
