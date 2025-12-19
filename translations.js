@@ -240,6 +240,12 @@ function updateAllTranslations() {
         element.textContent = translate(key);
     });
     
+    // Elementos com data-translate-key (para mensagens de erro dinâmicas)
+    document.querySelectorAll('[data-translate-key]').forEach(element => {
+        const key = element.getAttribute('data-translate-key');
+        element.textContent = translate(key);
+    });
+    
     // Placeholders
     document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
         const key = element.getAttribute('data-translate-placeholder');

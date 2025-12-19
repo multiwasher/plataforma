@@ -386,7 +386,8 @@
                 const serialExists = await validateSerialExists(serialInput);
                 
                 if (!serialExists) {
-                    errorMsg.textContent = window.translate('Serial não encontrado') || `Equipamento "${serialInput}" não encontrado. Crie um novo equipamento ou verifique o número de série.`;
+                    errorMsg.textContent = window.translate('Serial não encontrado');
+                    errorMsg.setAttribute('data-translate-key', 'Serial não encontrado');
                     errorMsg.classList.remove('hidden');
                     return;
                 }
@@ -631,15 +632,18 @@
                     });
                 }
                 
-                // Handle toggle buttons for Logística section
+                // Handle toggle buttons for Logística, Montagem, and Equipamento sections
                 const hiddenInput = document.querySelector(`input[type="hidden"][name="${key}"]`);
-                if (hiddenInput && val) {
-                    hiddenInput.value = val;
-                    // Activate the corresponding button (for Logística, Montagem and Equipamento)
-                    const buttons = document.querySelectorAll(`button[data-field="${key}"]`);
+                if (hiddenInput) {
+                    // Set the value in the hidden input (including empty values)
+                    hiddenInput.value = val || "";
+                    
+                    // Find buttons by both data-name (Logística) and data-field (Montagem/Equipamento)
+                    const buttons = document.querySelectorAll(`button[data-name="${key}"], button[data-field="${key}"]`);
                     buttons.forEach(btn => {
                         btn.classList.remove('btn-active-yes', 'btn-active-no', 'btn-inactive');
-                        if (btn.getAttribute('data-value') === val) {
+                        // Only apply active class if value matches AND value is not empty
+                        if (val && btn.getAttribute('data-value') === val) {
                             if (val === 'Sim') {
                                 btn.classList.add('btn-active-yes');
                             } else if (val === 'Não') {
@@ -656,7 +660,7 @@
             }
             
             // Initialize all toggle buttons that don't have a value yet
-            document.querySelectorAll('.toggle-btn').forEach(btn => {
+            document.querySelectorAll('.toggle-btn, .btn-equipamento, .btn-montagem').forEach(btn => {
                 if (!btn.classList.contains('btn-active-yes') && 
                     !btn.classList.contains('btn-active-no')) {
                     btn.classList.add('btn-inactive');
